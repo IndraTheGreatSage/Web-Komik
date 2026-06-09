@@ -1,0 +1,104 @@
+{
+    "comics": [
+        {
+            "id": "Solo Leveling",
+            "title": "Solo Leveling",
+            "type": "Manhwa",
+            "status": "Ongoing",
+            "rating": "9.0",
+            "year": "Uknown",
+            "author": "REDICE Studio",
+            "cover": "https://placehold.co/420x620/24130f/f8dfc5.png?text=Solo%20Leveling",
+            "genres": ["Action", "Fantasy", "Adventure", "Supernatural", "Webtoon", "Martial Arts", "Romance"],
+            "summary": "Di dunia di mana para pemburu dengan kekuatan magis melindungi umat manusia dari makhluk-makhluk berbahaya, seorang pemburu kelas terendah bernama Sung Jin-Woo menemukan dirinya terjebak dalam sebuah dungeon yang mematikan. Setelah hampir kehilangan nyawanya, ia mendapatkan kemampuan unik yang memungkinkannya untuk menjadi lebih kuat dengan mengalahkan musuh-musuhnya. Dengan tekad untuk melindungi orang-orang yang dicintainya dan mengungkap misteri di balik kekuatannya, Sung Jin-Woo memulai perjalanan epiknya sebagai pemburu terkuat di dunia.",
+            "chapterTemplate": {
+                "count": 12,
+                "order": "desc",
+                "titlePattern": "Chapter {number}: Petualangan Baru",
+                "idPattern": "Solo Leveling-chapter-{number}",
+                "pagePattern": "https://placehold.co/920x1280/24130f/f8dfc5.png?text=Solo%20Leveling%0AChapter%20{chapter}%0APage%20{page}",
+                "pageStart": 1,
+                "pageEnd": 7,
+                "pagePad": 2,
+                "updatedAt": ["2026-06-09", "2026-06-02", "2026-05-26", "2026-05-19"]
+            }
+        },
+        {
+            "id": "menara-senja",
+            "title": "Menara Senja",
+            "type": "Manhua",
+            "status": "Ongoing",
+            "rating": "4.7",
+            "year": "2025",
+            "author": "Ink Harbor",
+            "cover": "https://placehold.co/420x620/102b28/f2d56b.png?text=Menara%20Senja",
+            "genres": ["Cultivation", "Adventure", "Mystery"],
+            "summary": "Di puncak menara yang hanya muncul saat senja, seorang pewaris keluarga kecil mencari kitab yang bisa menyelamatkan desanya.",
+            "chapters": [
+                {
+                    "id": "menara-senja-chapter-4",
+                    "number": 4,
+                    "title": "Chapter 4: Bayangan Guru",
+                    "updatedAt": "2026-06-08",
+                    "pagePattern": "https://placehold.co/920x1280/102b28/f2d56b.png?text=Menara%20Senja%0AChapter%20{chapter}%0APage%20{page}",
+                    "pageStart": 1,
+                    "pageEnd": 6,
+                    "pagePad": 2
+                },
+                {
+                    "id": "menara-senja-chapter-3",
+                    "number": 3,
+                    "title": "Chapter 3: Lantai Keempat",
+                    "updatedAt": "2026-06-01",
+                    "pagePattern": "https://placehold.co/920x1280/102b28/f2d56b.png?text=Menara%20Senja%0AChapter%20{chapter}%0APage%20{page}",
+                    "pageStart": 1,
+                    "pageEnd": 6,
+                    "pagePad": 2
+                },
+                {
+                    "id": "menara-senja-chapter-2",
+                    "number": 2,
+                    "title": "Chapter 2: Seruling Tua",
+                    "updatedAt": "2026-05-25",
+                    "pagePattern": "https://placehold.co/920x1280/102b28/f2d56b.png?text=Menara%20Senja%0AChapter%20{chapter}%0APage%20{page}",
+                    "pageStart": 1,
+                    "pageEnd": 6,
+                    "pagePad": 2
+                },
+                {
+                    "id": "menara-senja-chapter-1",
+                    "number": 1,
+                    "title": "Chapter 1: Gerbang Awan",
+                    "updatedAt": "2026-05-18",
+                    "pagePattern": "https://placehold.co/920x1280/102b28/f2d56b.png?text=Menara%20Senja%0AChapter%20{chapter}%0APage%20{page}",
+                    "pageStart": 1,
+                    "pageEnd": 6,
+                    "pagePad": 2
+                }
+            ]
+        },
+        {
+            "id": "kelas-setelah-jam-dua",
+            "title": "Kelas Setelah Jam Dua",
+            "type": "Manga",
+            "status": "Tamat",
+            "rating": "4.6",
+            "year": "2024",
+            "author": "Mori Lane",
+            "cover": "https://placehold.co/420x620/f0e3c4/202020.png?text=Kelas%20Setelah%20Jam%20Dua",
+            "genres": ["School Life", "Drama", "Slice of Life"],
+            "summary": "Klub kecil yang hampir dibubarkan mulai mencatat kejadian aneh di sekolah, lalu menyadari setiap catatan mereka mengubah hari esok.",
+            "chapterTemplate": {
+                "start": 1,
+                "end": 8,
+                "order": "desc",
+                "titlePattern": "Chapter {number}",
+                "idPattern": "kelas-setelah-jam-dua-chapter-{number}",
+                "pagePattern": "https://placehold.co/920x1280/f0e3c4/202020.png?text=Kelas%20Setelah%20Jam%20Dua%0AChapter%20{chapter}%0APage%20{page}",
+                "pageStart": 1,
+                "pageEnd": 5,
+                "pagePad": 2
+            }
+        }
+    ]
+}
