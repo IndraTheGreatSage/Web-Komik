@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KomikLoka, katalog baca manhua, manhwa, dan manga berbasis web statis.">
+    <title>KomikLoka - Baca Manhua, Manhwa, Manga</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>Manhua, manhwa, manga</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <a href="#katalog">Katalog</a>
+            <a href="#rilis">Rilis</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="reader-dashboard" aria-labelledby="judul-dashboard">
+            <div class="dashboard-copy">
+                <p class="eyebrow">Rak baca digital</p>
+                <h1 id="judul-dashboard">Cari komik, pilih chapter, langsung lanjut baca.</h1>
+                <p class="lead">Support The Developer.</p>
+            </div>
+
+            <form class="search-panel" role="search">
+                <label for="searchInput">Cari judul atau genre</label>
+                <div class="search-row">
+                    <input id="searchInput" type="search" placeholder="Solo leveling, action, romance..." autocomplete="off">
+                    <button type="reset" id="resetSearch">Reset</button>
+                </div>
+                <div class="filter-tabs" id="filterTabs" aria-label="Filter tipe komik"></div>
+            </form>
+        </section>
+
+        <section class="spotlight" id="rilis" aria-labelledby="judul-spotlight">
+            <div class="spotlight-art">
+                <img id="spotlightCover" alt="" loading="eager">
+            </div>
+            <div class="spotlight-content">
+                <p class="eyebrow">Pilihan editor</p>
+                <h2 id="judul-spotlight">Memuat rekomendasi...</h2>
+                <p id="spotlightSummary"></p>
+                <div class="meta-row" id="spotlightMeta"></div>
+                <div class="action-row">
+                    <a class="primary-action" id="spotlightRead" href="#">Mulai baca</a>
+                    <a class="ghost-action" id="spotlightDetail" href="#">Lihat detail</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="catalog-section" id="katalog" aria-labelledby="judul-katalog">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Katalog</p>
+                    <h2 id="judul-katalog">Semua judul</h2>
+                </div>
+                <p id="resultCount" class="result-count">0 komik</p>
+            </div>
+            <div class="comic-grid" id="comicGrid"></div>
+            <p class="empty-state" id="emptyState" hidden>Tidak ada komik yang cocok.</p>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

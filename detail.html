@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detail komik dan daftar chapter di KomikLoka.">
+    <title>Detail Komik - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header compact">
+        <a class="brand" href="index.html" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>Detail komik</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <a href="index.html">Katalog</a>
+        </nav>
+    </header>
+
+    <main id="detailRoot" class="detail-root">
+        <section class="detail-hero" aria-live="polite">
+            <div class="detail-cover">
+                <img id="detailCover" alt="" loading="eager">
+            </div>
+            <div class="detail-copy">
+                <p class="eyebrow" id="detailType">Memuat</p>
+                <h1 id="detailTitle">Memuat detail komik...</h1>
+                <p id="detailSummary" class="lead"></p>
+                <div class="meta-row" id="detailMeta"></div>
+                <div class="tag-list" id="detailTags"></div>
+                <div class="action-row">
+                    <a class="primary-action" id="startReading" href="#">Mulai baca</a>
+                    <a class="ghost-action" href="index.html">Kembali</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="chapter-section" aria-labelledby="judul-chapter">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Chapter</p>
+                    <h2 id="judul-chapter">Daftar chapter</h2>
+                </div>
+                <p id="chapterCount" class="result-count">0 chapter</p>
+            </div>
+            <div class="chapter-list" id="chapterList"></div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="data.js"></script>
+    <script src="detail.js"></script>
+</body>
+</html>

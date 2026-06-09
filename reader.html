@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Reader KomikLoka untuk membaca chapter komik secara vertikal.">
+    <title>Baca Komik - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="reader-body">
+    <header class="reader-toolbar">
+        <a class="toolbar-link" id="backToDetail" href="index.html">Kembali</a>
+        <div class="reader-title">
+            <strong id="readerComicTitle">Memuat komik...</strong>
+            <span id="readerChapterTitle">Memuat chapter...</span>
+        </div>
+        <div class="reader-controls">
+            <button type="button" id="prevChapter">Sebelum</button>
+            <select id="chapterSelect" aria-label="Pilih chapter"></select>
+            <button type="button" id="nextChapter">Lanjut</button>
+        </div>
+    </header>
+
+    <main class="reader-main">
+        <div class="reader-pages" id="readerPages" aria-live="polite"></div>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="data.js"></script>
+    <script src="reader.js"></script>
+</body>
+</html>
