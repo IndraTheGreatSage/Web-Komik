@@ -38,6 +38,11 @@
         chapterSelect.disabled = true;
     };
 
+    // Untuk mode komikku, load chapter list terlebih dahulu
+    if (comic && window.KomikData.loadComicDetail) {
+        await window.KomikData.loadComicDetail(comic);
+    }
+
     if (!comic || comic.chapters.length === 0) {
         showMissing();
         return;

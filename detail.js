@@ -42,6 +42,11 @@
         return;
     }
 
+    // Untuk mode komikku, load chapter list terlebih dahulu (lazy load dari API)
+    if (window.KomikData.loadComicDetail) {
+        await window.KomikData.loadComicDetail(comic);
+    }
+
     const firstChapter = comic.chapters[comic.chapters.length - 1];
     const readUrl = firstChapter
         ? `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(firstChapter.id)}`
