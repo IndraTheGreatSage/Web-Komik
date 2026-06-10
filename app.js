@@ -1,16 +1,8 @@
 (async function () {
     const comics = window.KomikData ? await window.KomikData.loadLibrary() : [];
-    const grid = document.getElementById("comicGrid");
-    const tabs = document.getElementById("filterTabs");
-    const searchInput = document.getElementById("searchInput");
-    const resetSearch = document.getElementById("resetSearch");
-    const resultCount = document.getElementById("resultCount");
-    const emptyState = document.getElementById("emptyState");
-
-    const state = {
-        type: "Semua",
-        query: "",
-    };
+    const params = new URLSearchParams(window.location.search);
+    const comicId = params.get("id");
+    const comic = comics.find((item) => item.id === comicId);
 
     const escapeHtml = (value) => {
         return String(value ?? "")
@@ -21,130 +13,113 @@
             .replaceAll("'", "&#039;");
     };
 
-    const getFirstChapter = (comic) => {
-        return comic.chapters[comic.chapters.length - 1];
-    };
-
-    const getLatestChapter = (comic) => {
-        return comic.chapters[0];
-    };
-
-    const formatMeta = (comic) => {
-        return [comic.type, comic.status, `${comic.rating}/5`, comic.year];
-    };
-
-    const getReaderUrl = (comic, chapter) => {
-        if (!chapter) {
-            return `detail.html?id=${encodeURIComponent(comic.id)}`;
+    const showMissing = () => {
+        const root = document.getElementById("detailRoot");
+        if (root) {
+            root.innerHTML = `
+                <section class="empty-page">
+                    <p class="eyebrow">Tidak ditemukan</p>
+                    <h1>Komik belum ada di katalog.</h1>
+                    <p>Pastikan link yang dibuka benar atau pastikan koneksi internet ke API lancar.</p>
+                    <a class="primary-action" href="index.html">Kembali ke katalog</a>
+                </section>
+            `;
         }
-
-        return `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
     };
 
-    const renderTabs = () => {
-        const types = ["Semua", ...new Set(comics.map((comic) => comic.type))];
+    const formatDate = (value) => {
+        if (!value) return "Belum ada tanggal";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value; // Amankan format teks bawaan API seperti "1 minggu yang lalu"
 
-        tabs.innerHTML = types.map((type) => {
-            const active = state.type === type ? "active" : "";
-            return `<button type="button" class="${active}" data-type="${escapeHtml(type)}">${escapeHtml(type)}</button>`;
-        }).join("");
-    };
-
-    const renderSpotlight = () => {
-        const spotlight = comics[0];
-        if (!spotlight) {
-            document.getElementById("judul-spotlight").textContent = "Data komik belum tersedia.";
-            document.getElementById("spotlightSummary").textContent = "Isi komik-data.json atau sambungkan config.js ke API legal milikmu.";
-            return;
-        }
-
-        const firstChapter = getFirstChapter(spotlight);
-        const detailUrl = `detail.html?id=${encodeURIComponent(spotlight.id)}`;
-
-        document.getElementById("spotlightCover").src = spotlight.cover;
-        document.getElementById("spotlightCover").alt = `Cover ${spotlight.title}`;
-        document.getElementById("judul-spotlight").textContent = spotlight.title;
-        document.getElementById("spotlightSummary").textContent = spotlight.summary;
-        document.getElementById("spotlightRead").href = getReaderUrl(spotlight, firstChapter);
-        document.getElementById("spotlightDetail").href = detailUrl;
-        document.getElementById("spotlightMeta").innerHTML = formatMeta(spotlight)
-            .map((item) => `<span>${escapeHtml(item)}</span>`)
-            .join("");
-    };
-
-    const getFilteredComics = () => {
-        const query = state.query.trim().toLowerCase();
-
-        return comics.filter((comic) => {
-            const matchesType = state.type === "Semua" || comic.type === state.type;
-            const haystack = [
-                comic.title,
-                comic.type,
-                comic.status,
-                comic.author,
-                comic.summary,
-                ...comic.genres,
-            ].join(" ").toLowerCase();
-
-            return matchesType && (!query || haystack.includes(query));
+        return date.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
         });
     };
 
-    const renderGrid = () => {
-        const filteredComics = getFilteredComics();
-        resultCount.textContent = `${filteredComics.length} komik`;
-        emptyState.hidden = filteredComics.length > 0;
+    if (!comic) {
+        showMissing();
+        return;
+    }
 
-        grid.innerHTML = filteredComics.map((comic) => {
-            const latest = getLatestChapter(comic);
-            const detailUrl = `detail.html?id=${encodeURIComponent(comic.id)}`;
-            const genreLabels = comic.genres.slice(0, 2).map((genre) => `<span>${escapeHtml(genre)}</span>`).join("");
-            const chapterUrl = getReaderUrl(comic, latest);
-            const chapterLabel = latest ? latest.title : "Lihat detail";
+    // Menarik daftar chapter secara live dari API Vercel baru (Lazy Load)
+    if (window.KomikData.loadComicDetail) {
+        await window.KomikData.loadComicDetail(comic);
+    }
+
+    const firstChapter = comic.chapters && comic.chapters.length > 0 
+        ? comic.chapters[comic.chapters.length - 1] 
+        : null;
+        
+    const readUrl = firstChapter
+        ? `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(firstChapter.id)}`
+        : "#";
+
+    document.title = `${comic.title} - KomikLoka`;
+    
+    // Render data ke elemen HTML pendukung
+    const coverEl = document.getElementById("detailCover");
+    if (coverEl) {
+        coverEl.src = comic.cover;
+        coverEl.alt = `Cover ${comic.title}`;
+    }
+    
+    const typeEl = document.getElementById("detailType");
+    if (typeEl) typeEl.textContent = comic.type;
+    
+    const titleEl = document.getElementById("detailTitle");
+    if (titleEl) titleEl.textContent = comic.title;
+    
+    const summaryEl = document.getElementById("detailSummary");
+    if (summaryEl) summaryEl.textContent = comic.summary || "Sinopsis tidak tersedia untuk komik ini.";
+    
+    const startReadingEl = document.getElementById("startReading");
+    if (startReadingEl) {
+        startReadingEl.href = readUrl;
+        startReadingEl.textContent = firstChapter ? "Mulai baca" : "Belum ada chapter";
+    }
+    
+    const chapterCountEl = document.getElementById("chapterCount");
+    if (chapterCountEl) {
+        chapterCountEl.textContent = `${comic.chapters ? comic.chapters.length : 0} chapter`;
+    }
+
+    // Penyesuaian tampilan rating agar fleksibel mengikuti format angka dari API baru
+    const displayRating = comic.rating && comic.rating !== "-" 
+        ? (comic.rating.includes("/5") || comic.rating.includes("/10") ? comic.rating : `⭐ ${comic.rating}`)
+        : "-";
+
+    const metaEl = document.getElementById("detailMeta");
+    if (metaEl) {
+        metaEl.innerHTML = [
+            comic.status || "Unknown",
+            displayRating,
+            comic.year || "-",
+            comic.author || "Unknown",
+        ].map((item) => `<span>${escapeHtml(item)}</span>`).join("");
+    }
+
+    const tagsEl = document.getElementById("detailTags");
+    if (tagsEl && comic.genres) {
+        tagsEl.innerHTML = comic.genres
+            .map((genre) => `<span>${escapeHtml(genre)}</span>`)
+            .join("");
+    }
+
+    const chapterListEl = document.getElementById("chapterList");
+    if (chapterListEl && comic.chapters) {
+        chapterListEl.innerHTML = comic.chapters.map((chapter) => {
+            const chapterUrl = `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
+            const date = formatDate(chapter.updatedAt);
 
             return `
-                <article class="comic-card">
-                    <a class="cover-link" href="${detailUrl}" aria-label="Buka detail ${escapeHtml(comic.title)}">
-                        <img src="${escapeHtml(comic.cover)}" alt="Cover ${escapeHtml(comic.title)}" loading="lazy">
-                    </a>
-                    <div class="comic-card-body">
-                        <div class="card-topline">
-                            <span>${escapeHtml(comic.type)}</span>
-                            <span>${escapeHtml(comic.status)}</span>
-                        </div>
-                        <h3><a href="${detailUrl}">${escapeHtml(comic.title)}</a></h3>
-                        <p>${escapeHtml(comic.summary)}</p>
-                        <div class="tag-list">${genreLabels}</div>
-                        <a class="chapter-pill" href="${chapterUrl}">
-                            ${escapeHtml(chapterLabel)}
-                        </a>
-                    </div>
-                </article>
+                <a class="chapter-row" href="${chapterUrl}">
+                    <span>${escapeHtml(chapter.title)}</span>
+                    <time datetime="${escapeHtml(chapter.updatedAt)}">${escapeHtml(date)}</time>
+                </a>
             `;
         }).join("");
-    };
-
-    tabs.addEventListener("click", (event) => {
-        const button = event.target.closest("button[data-type]");
-        if (!button) return;
-
-        state.type = button.dataset.type;
-        renderTabs();
-        renderGrid();
-    });
-
-    searchInput.addEventListener("input", (event) => {
-        state.query = event.target.value;
-        renderGrid();
-    });
-
-    resetSearch.addEventListener("click", () => {
-        state.query = "";
-        searchInput.value = "";
-        renderGrid();
-    });
-
-    renderTabs();
-    renderSpotlight();
-    renderGrid();
+    }
 })();
