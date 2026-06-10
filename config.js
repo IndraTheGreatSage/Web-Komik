@@ -1,11 +1,10 @@
 window.KOMIK_CONFIG = {
-    // Mode "json" = pakai file JSON lokal
-    // Mode "api"  = pakai Komiku REST API (Express.js Vercel - Hemat Kuota)
+    // Mode "api" agar sistem membaca dari REST API online
     mode: "api",
 
-    // URL base Komiku REST API Publik (Gratis & tidak perlu Docker)
-    apiBaseUrl: "https://komiku-rest-api.vercel.app",
+    // Menembak ke REST API Publik yang aktif di internet
+    apiBaseUrl: "https://komiku-api.fly.dev",
 
-    // Kalau mode "json", isi ini:
+    // Cadangan data lokal jika internet putus
     dataUrl: "komik-data.json",
 };
