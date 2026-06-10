@@ -46,9 +46,8 @@
 
     const getListFromPayload = (payload) => {
         if (Array.isArray(payload)) return payload;
-        if (Array.isArray(payload.comics)) return payload.comics;
-        if (Array.isArray(payload.results)) return payload.results;
         if (Array.isArray(payload.data)) return payload.data;
+        if (Array.isArray(payload.comics)) return payload.comics;
         return [];
     };
 
@@ -141,16 +140,16 @@
 
     const normalizeComic = (rawComic) => {
         const comic = {
-            id: String(rawComic.id || rawComic.slug || rawComic.title || ""),
+            id: String(rawComic.slug || rawComic.id || rawComic.title || ""),
             title: rawComic.title || "Tanpa judul",
             type: rawComic.type || "Komik",
             status: rawComic.status || "Unknown",
             rating: rawComic.rating || "-",
             year: rawComic.year || "-",
             author: rawComic.author || "Unknown",
-            cover: rawComic.cover || rawComic.image || rawComic.thumbnail || "",
-            genres: Array.isArray(rawComic.genres) ? rawComic.genres : (Array.isArray(rawComic.genre) ? rawComic.genre : []),
-            summary: rawComic.summary || rawComic.description || rawComic.desc || "",
+            cover: rawComic.thumbnail || rawComic.image || rawComic.cover || "",
+            genres: Array.isArray(rawComic.genre) ? rawComic.genre : (Array.isArray(rawComic.genres) ? rawComic.genres : []),
+            summary: rawComic.sinopsis || rawComic.description || rawComic.desc || "",
             chapters: [],
             chapterTemplate: rawComic.chapterTemplate,
         };
@@ -172,57 +171,46 @@
         return response.json();
     };
 
-    // ─── Komikku API Adapter ─────────────────────────────────────────────────────
+    // ─── New Express.js Komiku API Adapter ────────────────────────────────────────
 
-    /**
-     * Konversi satu item dari /api/comic/list ke format comic KomikLoka.
-     * Chapter list TIDAK diisi di sini (lazy load saat buka detail/reader).
-     */
-    const komikkuListItemToComic = (item) => {
-        // endpoint: "/manga/judul-komik/"  →  id: "judul-komik"
-        const endpoint = item.endpoint || "";
-        const id = endpoint.replace(/^\/manga\//, "").replace(/\/$/, "") || item.title;
-
+    const newApiListItemToComic = (item) => {
+        const slug = item.slug || "";
         return {
-            id,
+            id: slug,
             title: item.title || "Tanpa judul",
             type: item.type || "Komik",
             status: "Unknown",
             rating: "-",
             year: "-",
             author: "Unknown",
-            cover: item.image || item.thumbnail || cover(item.title, "24130f", "f8dfc5"),
+            cover: item.thumbnail || item.image || cover(item.title, "24130f", "f8dfc5"),
             genres: [],
-            summary: item.desc || item.description || "",
+            summary: "",
             chapters: [],
-            // Simpan endpoint asli untuk lazy-load detail
-            _komikkuEndpoint: endpoint,
-            _komikkuLoaded: false,
+            _newApiSlug: slug,
+            _newApiLoaded: false,
         };
     };
 
-    /**
-     * Konversi response /api/comic/info ke field detail comic.
-     * Chapter list diisi di sini sebagai stub (pages di-load saat reader dibuka).
-     */
-    const komikkuInfoToComic = (base, info) => {
+    const newApiInfoToComic = (base, info) => {
         const chapterList = Array.isArray(info.chapter_list) ? info.chapter_list : [];
 
-        // chapter_list sudah urut desc dari API
         const chapters = chapterList.map((ch, index) => {
-            // endpoint: "/ch/judul-chapter-1/"  →  id: "judul-chapter-1"
-            const chEndpoint = ch.endpoint || "";
-            const chId = chEndpoint.replace(/^\/ch\//, "").replace(/\/$/, "") || `chapter-${chapterList.length - index}`;
+            const chSlug = ch.slug || "";
+            // Ambil parameter murni chapter (misal dari /ch/chapter-19/ atau "19")
+            let chParam = chSlug.replace(/^\/|\/$/g, "");
+            if (chParam.includes('/')) {
+                chParam = chParam.split('/').pop();
+            }
 
             return {
-                id: chId,
+                id: chSlug,
                 number: chapterList.length - index,
-                title: ch.name || `Chapter ${chapterList.length - index}`,
-                updatedAt: ch.updatedAt || "",
+                title: ch.name || ch.title || `Chapter ${chapterList.length - index}`,
+                updatedAt: ch.date || "",
                 pages: [],
-                pagesUrl: "",
-                // Simpan endpoint chapter untuk lazy-load gambar
-                _komikkuEndpoint: chEndpoint,
+                _comicSlug: base.id,
+                _chapterParam: chParam || chSlug,
             };
         });
 
@@ -232,37 +220,32 @@
             status: info.status || base.status,
             rating: info.rating || base.rating,
             author: info.author || base.author,
-            cover: info.thumbnail || base.cover,
+            cover: info.thumbnail || info.image || base.cover,
             genres: Array.isArray(info.genre) ? info.genre : base.genres,
+            summary: info.sinopsis || info.description || base.summary,
             chapters,
-            _komikkuLoaded: true,
+            _newApiLoaded: true,
         };
     };
 
-    /**
-     * Load detail comic dari /api/comic/info jika belum di-load.
-     * Update cachedLibrary in-place.
-     */
     const ensureComicDetail = async (comic) => {
-        if (comic._komikkuLoaded || !comic._komikkuEndpoint) return comic;
+        if (comic._newApiLoaded || !comic.id) return comic;
 
         const config = window.KOMIK_CONFIG || {};
-        const base = config.apiBaseUrl || "http://localhost:3011";
+        const base = config.apiBaseUrl || "https://komiku-rest-api.vercel.app";
 
         try {
-            // endpoint: "/manga/judul/"  →  /api/comic/info/manga/judul/
-            const infoPath = comic._komikkuEndpoint.replace(/^\/manga\//, "");
-            const url = `${base}/api/comic/info/manga/${infoPath}`;
+            const url = `${base}/detail-komik/${comic.id}`;
             const payload = await loadJson(url);
+            const resData = payload.data || payload;
 
-            if (payload.success && payload.data) {
-                const updated = komikkuInfoToComic(comic, payload.data);
-                // Update in-place di cachedLibrary
+            if (resData) {
+                const updated = newApiInfoToComic(comic, resData);
                 Object.assign(comic, updated);
             }
         } catch (error) {
             console.warn(`Gagal load detail komik "${comic.title}":`, error);
-            comic._komikkuLoaded = true; // Tandai sudah dicoba agar tidak loop
+            comic._newApiLoaded = true;
         }
 
         return comic;
@@ -279,36 +262,39 @@
         return list.map(normalizeComic).filter((c) => c.id);
     };
 
-    const loadLibraryFromKomikku = async () => {
+    const loadLibraryFromNewApi = async () => {
         const config = window.KOMIK_CONFIG || {};
-        const base = config.apiBaseUrl || "http://localhost:3011";
+        const base = config.apiBaseUrl || "https://komiku-rest-api.vercel.app";
 
-        // Ambil daftar dari semua tipe sekaligus
-        const [manga, manhwa, manhua] = await Promise.allSettled([
-            loadJson(`${base}/api/comic/list?filter=manga`),
-            loadJson(`${base}/api/comic/list?filter=manhwa`),
-            loadJson(`${base}/api/comic/list?filter=manhua`),
+        // Mengambil kombinasi data komik terbaru & populer agar grid beranda penuh dan ramai
+        const [terbaruPayload, populerPayload] = await Promise.allSettled([
+            loadJson(`${base}/terbaru`),
+            loadJson(`${base}/komik-populer`),
         ]);
 
         const combined = [];
 
-        for (const result of [manga, manhwa, manhua]) {
-            if (result.status === "fulfilled" && result.value.success) {
-                combined.push(...(result.value.data || []));
-            }
+        if (terbaruPayload.status === "fulfilled") {
+            const list = terbaruPayload.value.data || terbaruPayload.value;
+            if (Array.isArray(list)) combined.push(...list);
+        }
+        if (populerPayload.status === "fulfilled") {
+            const list = populerPayload.value.data || populerPayload.value;
+            if (Array.isArray(list)) combined.push(...list);
         }
 
-        if (combined.length === 0) throw new Error("Komikku API tidak mengembalikan data");
+        if (combined.length === 0) throw new Error("API tidak mengembalikan data komik");
 
-        // Deduplicate berdasarkan endpoint
+        // Hapus duplikasi berdasarkan slug
         const seen = new Set();
         const unique = combined.filter((item) => {
-            if (seen.has(item.endpoint)) return false;
-            seen.add(item.endpoint);
+            const slug = item.slug;
+            if (!slug || seen.has(slug)) return false;
+            seen.add(slug);
             return true;
         });
 
-        return unique.map(komikkuListItemToComic).filter((c) => c.id);
+        return unique.map(newApiListItemToComic).filter((c) => c.id);
     };
 
     const loadLibrary = async ({ force = false } = {}) => {
@@ -318,8 +304,8 @@
         const mode = config.mode || "json";
 
         try {
-            if (mode === "komikku") {
-                cachedLibrary = await loadLibraryFromKomikku();
+            if (mode === "api") {
+                cachedLibrary = await loadLibraryFromNewApi();
             } else {
                 cachedLibrary = await loadLibraryFromJson();
             }
@@ -335,45 +321,40 @@
     // ─── Load Chapter Pages ───────────────────────────────────────────────────────
 
     const loadChapterPages = async (chapter) => {
-        // Kalau sudah ada pages (dari JSON / pagePattern), langsung pakai
         if (Array.isArray(chapter.pages) && chapter.pages.length > 0) {
             return chapter.pages;
         }
 
-        // Kalau ada pagesUrl (format JSON lama), fetch itu
         if (chapter.pagesUrl) {
             const payload = await loadJson(chapter.pagesUrl);
             const pages = Array.isArray(payload) ? payload : payload.pages;
             return Array.isArray(pages) ? pages.map(normalizePage).filter(Boolean) : [];
         }
 
-        // Kalau ada _komikkuEndpoint, fetch dari API Komikku
-        if (chapter._komikkuEndpoint) {
+        if (chapter._comicSlug && chapter._chapterParam) {
             const config = window.KOMIK_CONFIG || {};
-            const base = config.apiBaseUrl || "http://localhost:3011";
+            const base = config.apiBaseUrl || "https://komiku-rest-api.vercel.app";
 
-            // endpoint: "/ch/judul-chapter-1/"  →  /api/comic/chapter/ch/judul-chapter-1/
-            const chPath = chapter._komikkuEndpoint.replace(/^\/ch\//, "");
-            const url = `${base}/api/comic/chapter/ch/${chPath}`;
-
-            const payload = await loadJson(url);
-            if (payload.success && payload.data) {
-                const images = Array.isArray(payload.data.image) ? payload.data.image : [];
-                chapter.pages = images; // Cache supaya tidak fetch lagi
-                return images;
+            const url = `${base}/baca-chapter/${chapter._comicSlug}/${chapter._chapterParam}`;
+            try {
+                const payload = await loadJson(url);
+                const resData = payload.data || payload;
+                if (resData) {
+                    const images = resData.chapter_images || resData.images || resData.image || [];
+                    chapter.pages = images;
+                    return images;
+                }
+            } catch (error) {
+                console.error("Gagal memuat gambar chapter:", error);
             }
         }
 
         return [];
     };
 
-    /**
-     * Load detail comic (chapter list) — dipanggil oleh detail.js sebelum render.
-     * Untuk mode komikku, ini yang mengisi chapter list.
-     */
     const loadComicDetail = async (comic) => {
         const config = window.KOMIK_CONFIG || {};
-        if (config.mode !== "komikku") return comic;
+        if (config.mode !== "api") return comic;
         return ensureComicDetail(comic);
     };
 

@@ -1,12 +1,10 @@
 window.KOMIK_CONFIG = {
-    // Mode "json"     = pakai file JSON lokal (default lama)
-    // Mode "komikku"  = pakai Komikku API (Go backend)
-    mode: "komikku",
+    // Mode "json" = pakai file JSON lokal
+    // Mode "api"  = pakai Komiku REST API (Express.js Vercel - Hemat Kuota)
+    mode: "api",
 
-    // URL base Komikku API kamu.
-    // Kalau run lokal pakai Docker: "http://localhost:3011"
-    // Kalau sudah deploy: "https://domain-api-kamu.com"
-    apiBaseUrl: "http://localhost:3011",
+    // URL base Komiku REST API Publik (Gratis & tidak perlu Docker)
+    apiBaseUrl: "https://komiku-rest-api.vercel.app",
 
     // Kalau mode "json", isi ini:
     dataUrl: "komik-data.json",
