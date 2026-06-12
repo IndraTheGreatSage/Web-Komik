@@ -1,107 +1,117 @@
-<!-- GitAds-Verify: DBW8G884X4K725U9YJY8NEG65BPFJJKJ -->
+# KomikLoka
 
-# Komiku REST API
+Template web baca manhua, manhwa, dan manga berbasis HTML, CSS, dan JavaScript statis. Cocok untuk deploy langsung ke Vercel tanpa build step.
 
-Express.js REST API for fetching comic data from public Komiku pages.
+Gunakan hanya konten yang kamu punya haknya, karya sendiri, public domain, atau sumber yang memang memberi izin untuk ditayangkan ulang.
 
-![Komiku API Docs preview](./img/komiku-api-docs-preview.svg)
+## Cara Isi Data Banyak Sekaligus
 
-## Links
+Data utama ada di `komik-data.json`. Halaman web akan otomatis membaca file itu lewat `data.js`.
 
-API base URL:
+Kalau kamu punya API/JSON legal dari tempat lain, ubah URL di `config.js`:
 
-```txt
-https://komiku-rest-api.vercel.app
+```js
+window.KOMIK_CONFIG = {
+    dataUrl: "https://domain-kamu.com/komik-data.json",
+};
 ```
 
-Swagger docs:
+Sumber data harus berupa JSON dengan bentuk:
 
-```txt
-https://komiku-rest-api.vercel.app/api-docs
+```json
+{
+    "comics": [
+        {
+            "id": "judul-komik",
+            "title": "Judul Komik",
+            "type": "Manhwa",
+            "status": "Berjalan",
+            "rating": "4.8",
+            "year": "2026",
+            "author": "Nama Author",
+            "cover": "https://cdn-kamu.com/cover.jpg",
+            "genres": ["Action", "Fantasy"],
+            "summary": "Ringkasan cerita.",
+            "chapters": []
+        }
+    ]
+}
 ```
 
-Static docs page:
+## Chapter Manual, Gambar Otomatis
 
-```txt
-https://vernsg.is-a.dev/komiku-api-docs
+Pakai `pagePattern` kalau URL gambar chapter punya pola angka:
+
+```json
+{
+    "id": "komik-chapter-1",
+    "number": 1,
+    "title": "Chapter 1",
+    "updatedAt": "2026-06-09",
+    "pagePattern": "https://cdn-kamu.com/komik/chapter-1/{page}.jpg",
+    "pageStart": 1,
+    "pageEnd": 20,
+    "pagePad": 3
+}
 ```
 
-## Features
+Contoh hasil dari `pagePad: 3`:
 
-- Latest comics
-- Comic recommendations
-- Comic library with pagination
-- Popular comics
-- Comic details
-- Chapter reader
-- Comic search
-- Colored comics
-- Genre list and genre detail pages
-
-## Endpoints
-
-```txt
-GET /rekomendasi
-GET /terbaru
-GET /pustaka
-GET /pustaka/page/:page
-GET /komik-populer
-GET /komik-populer/manga
-GET /komik-populer/manhwa
-GET /komik-populer/manhua
-GET /detail-komik/:slug
-GET /baca-chapter/:slug/:chapter
-GET /search?q=keyword
-GET /berwarna
-GET /berwarna/page/:page
-GET /genre-all
-GET /genre-rekomendasi
-GET /genre/:slug
-GET /genre/:slug/page/:page
+```text
+001.jpg
+002.jpg
+003.jpg
 ```
 
-## Quick Test
+## Banyak Chapter Otomatis
 
-```bash
-curl https://komiku-rest-api.vercel.app/terbaru
-curl https://komiku-rest-api.vercel.app/detail-komik/komen-fuufu
-curl https://komiku-rest-api.vercel.app/baca-chapter/komen-fuufu/19
+Pakai `chapterTemplate` kalau chapter dan gambar sama-sama punya pola URL:
+
+```json
+{
+    "id": "judul-komik",
+    "title": "Judul Komik",
+    "cover": "https://cdn-kamu.com/cover.jpg",
+    "chapterTemplate": {
+        "start": 1,
+        "end": 100,
+        "order": "desc",
+        "titlePattern": "Chapter {number}",
+        "idPattern": "judul-komik-chapter-{number}",
+        "pagePattern": "https://cdn-kamu.com/judul-komik/chapter-{chapter}/{page}.jpg",
+        "pageStart": 1,
+        "pageEnd": 18,
+        "pagePad": 3
+    }
+}
 ```
 
-## Local Development
+Dengan format itu, 100 chapter langsung muncul, dan tiap chapter punya 18 halaman gambar otomatis.
 
-Requirements:
+## Chapter Dari File/API Terpisah
 
-- Node.js 18 or newer
-- npm
+Kalau halaman gambar tiap chapter mau dipisah, pakai `pagesUrl`:
 
-Install dependencies:
-
-```bash
-npm install
+```json
+{
+    "id": "komik-chapter-1",
+    "number": 1,
+    "title": "Chapter 1",
+    "pagesUrl": "https://domain-kamu.com/komik/chapter-1.json"
+}
 ```
 
-Run development server:
+Isi `chapter-1.json`:
 
-```bash
-npm run dev
+```json
+{
+    "pages": [
+        "https://cdn-kamu.com/komik/chapter-1/001.jpg",
+        "https://cdn-kamu.com/komik/chapter-1/002.jpg"
+    ]
+}
 ```
 
-Open:
+## Deploy Vercel
 
-```txt
-http://localhost:3001
-http://localhost:3001/api-docs
-```
-
-## Production
-
-```bash
-npm start
-```
-
-By default, the server uses port `3001`. You can override it with the `PORT` environment variable.
-
-## License
-
-ISC
+Vercel akan otomatis membaca `index.html` sebagai halaman utama. Setelah file di-push ke GitHub, Vercel akan redeploy lewat GitHub integration.

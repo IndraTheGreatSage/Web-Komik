@@ -173,8 +173,72 @@
 
     // ─── New Express.js Komiku API Adapter ────────────────────────────────────────
 
+    const getSlugFromApiItem = (item) => {
+        if (!item) return "";
+        if (item.slug || item.mangaSlug) return item.slug || item.mangaSlug;
+
+        const detailLink = item.apiDetailLink || item.detailLink || "";
+        const detailMatch = detailLink.match(/\/detail-komik\/([^/?#]+)/);
+        if (detailMatch) return detailMatch[1];
+
+        const originalLink = item.originalLink || "";
+        const mangaMatch = originalLink.match(/\/manga\/([^/?#]+)/);
+        return mangaMatch ? mangaMatch[1] : "";
+    };
+
+    const normalizeGenres = (value) => {
+        if (Array.isArray(value)) return value.filter(Boolean);
+        if (!value) return [];
+        return String(value)
+            .split(/\s*,\s*/)
+            .map((genre) => genre.trim())
+            .filter(Boolean);
+    };
+
+    const getInfoValue = (info, keys) => {
+        if (!info || typeof info !== "object") return "";
+        const foundKey = keys.find((key) => info[key]);
+        return foundKey ? info[foundKey] : "";
+    };
+
+    const getChapterParam = (chapter) => {
+        if (!chapter) return "";
+        if (chapter.chapterNumber) return String(chapter.chapterNumber);
+        if (chapter.number) return String(chapter.number);
+
+        const apiLink = chapter.apiLink || chapter.apiChapterLink || "";
+        const apiMatch = apiLink.match(/\/baca-chapter\/[^/]+\/([^/?#]+)/);
+        if (apiMatch) return apiMatch[1];
+
+        const originalLink = chapter.originalLink || chapter.originalChapterLink || "";
+        const originalMatch = originalLink.match(/chapter-([\d.]+)/i);
+        if (originalMatch) return originalMatch[1];
+
+        const titleMatch = String(chapter.title || chapter.latestChapter || chapter.latestChapterTitle || "").match(/chapter\s*([\d.]+)/i);
+        return titleMatch ? titleMatch[1] : "";
+    };
+
     const newApiListItemToComic = (item) => {
-        const slug = item.slug || "";
+        const slug = getSlugFromApiItem(item);
+        const latestTitle = item.latestChapterTitle || item.latestChapter || "";
+        const chapterParam = getChapterParam({
+            apiLink: item.apiChapterLink,
+            originalLink: item.latestChapterLink || item.originalChapterLink,
+            chapterNumber: item.chapterNumber,
+            title: latestTitle,
+        });
+        const latestChapter = latestTitle && chapterParam
+            ? [{
+                id: item.apiChapterLink || `${slug}-chapter-${chapterParam}`,
+                number: Number(chapterParam) || 1,
+                title: latestTitle,
+                updatedAt: item.updateTime || "",
+                pages: [],
+                _comicSlug: slug,
+                _chapterParam: chapterParam,
+            }]
+            : [];
+
         return {
             id: slug,
             title: item.title || "Tanpa judul",
@@ -184,44 +248,46 @@
             year: "-",
             author: "Unknown",
             cover: item.thumbnail || item.image || cover(item.title, "24130f", "f8dfc5"),
-            genres: [],
-            summary: "",
-            chapters: [],
+            genres: normalizeGenres(item.genre || item.genres),
+            summary: item.updateTime || item.readers || "",
+            chapters: latestChapter,
             _newApiSlug: slug,
             _newApiLoaded: false,
         };
     };
 
     const newApiInfoToComic = (base, info) => {
-        const chapterList = Array.isArray(info.chapter_list) ? info.chapter_list : [];
+        const chapterList = Array.isArray(info.chapters)
+            ? info.chapters
+            : (Array.isArray(info.chapter_list) ? info.chapter_list : []);
 
         const chapters = chapterList.map((ch, index) => {
-            const chSlug = ch.slug || "";
-            // Ambil parameter murni chapter (misal dari /ch/chapter-19/ atau "19")
-            let chParam = chSlug.replace(/^\/|\/$/g, "");
-            if (chParam.includes('/')) {
-                chParam = chParam.split('/').pop();
-            }
+            const chParam = getChapterParam(ch);
+            const id = ch.apiLink || ch.slug || `${base.id}-chapter-${chParam || index + 1}`;
 
             return {
-                id: chSlug,
-                number: chapterList.length - index,
-                title: ch.name || ch.title || `Chapter ${chapterList.length - index}`,
+                id,
+                number: Number(chParam) || chapterList.length - index,
+                title: ch.name || ch.title || `Chapter ${chParam || chapterList.length - index}`,
                 updatedAt: ch.date || "",
                 pages: [],
                 _comicSlug: base.id,
-                _chapterParam: chParam || chSlug,
+                _chapterParam: chParam,
             };
-        });
+        }).filter((chapter) => chapter._chapterParam);
+
+        const infoTable = info.info || {};
 
         return {
             ...base,
-            type: info.type || base.type,
-            status: info.status || base.status,
+            type: info.type || getInfoValue(infoTable, ["Jenis Komik", "Type"]) || base.type,
+            status: info.status || getInfoValue(infoTable, ["Status"]) || base.status,
             rating: info.rating || base.rating,
-            author: info.author || base.author,
+            author: info.author || getInfoValue(infoTable, ["Pengarang", "Author"]) || base.author,
             cover: info.thumbnail || info.image || base.cover,
-            genres: Array.isArray(info.genre) ? info.genre : base.genres,
+            genres: normalizeGenres(info.genres || info.genre).length
+                ? normalizeGenres(info.genres || info.genre)
+                : base.genres,
             summary: info.sinopsis || info.description || base.summary,
             chapters,
             _newApiLoaded: true,
@@ -279,8 +345,23 @@
             if (Array.isArray(list)) combined.push(...list);
         }
         if (populerPayload.status === "fulfilled") {
-            const list = populerPayload.value.data || populerPayload.value;
-            if (Array.isArray(list)) combined.push(...list);
+            const payload = populerPayload.value.data || populerPayload.value;
+            const sections = Array.isArray(payload)
+                ? [{ items: payload }]
+                : [
+                    { type: "Manga", items: payload.manga?.items },
+                    { type: "Manhwa", items: payload.manhwa?.items },
+                    { type: "Manhua", items: payload.manhua?.items },
+                ];
+
+            sections.forEach((section) => {
+                if (Array.isArray(section.items)) {
+                    combined.push(...section.items.map((item) => ({
+                        ...item,
+                        type: item.type || section.type,
+                    })));
+                }
+            });
         }
 
         if (combined.length === 0) throw new Error("API tidak mengembalikan data komik");
@@ -288,11 +369,13 @@
         // Hapus duplikasi berdasarkan slug
         const seen = new Set();
         const unique = combined.filter((item) => {
-            const slug = item.slug;
+            const slug = getSlugFromApiItem(item);
             if (!slug || seen.has(slug)) return false;
             seen.add(slug);
             return true;
         });
+
+        if (unique.length === 0) throw new Error("API tidak mengembalikan slug komik yang dikenali");
 
         return unique.map(newApiListItemToComic).filter((c) => c.id);
     };
@@ -341,8 +424,8 @@
                 const resData = payload.data || payload;
                 if (resData) {
                     const images = resData.chapter_images || resData.images || resData.image || [];
-                    chapter.pages = images;
-                    return images;
+                    chapter.pages = Array.isArray(images) ? images.map(normalizePage).filter(Boolean) : [];
+                    return chapter.pages;
                 }
             } catch (error) {
                 console.error("Gagal memuat gambar chapter:", error);
