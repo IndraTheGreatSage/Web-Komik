@@ -199,11 +199,11 @@
         if (!item) return "";
         if (item.slug || item.mangaSlug) return item.slug || item.mangaSlug;
 
-        const detailLink = item.apiDetailLink || item.detailLink || "";
+        const detailLink = item.apiDetailLink || item.detailLink || item.detailUrl || "";
         const detailMatch = detailLink.match(/\/detail-komik\/([^/?#]+)/);
         if (detailMatch) return detailMatch[1];
 
-        const originalLink = item.originalLink || "";
+        const originalLink = item.originalLink || item.url || "";
         const mangaMatch = originalLink.match(/\/manga\/([^/?#]+)/);
         return mangaMatch ? mangaMatch[1] : "";
     };
@@ -228,7 +228,7 @@
         if (chapter.chapterNumber) return String(chapter.chapterNumber);
         if (chapter.number) return String(chapter.number);
 
-        const apiLink = chapter.apiLink || chapter.apiChapterLink || "";
+        const apiLink = chapter.apiLink || chapter.apiChapterLink || chapter.url || "";
         const apiMatch = apiLink.match(/\/baca-chapter\/[^/]+\/([^/?#]+)/);
         if (apiMatch) return apiMatch[1];
 
@@ -242,10 +242,11 @@
 
     const newApiListItemToComic = (item) => {
         const slug = getSlugFromApiItem(item);
-        const latestTitle = item.latestChapterTitle || item.latestChapter || "";
+        const latestChapterData = typeof item.latestChapter === "object" ? item.latestChapter : null;
+        const latestTitle = item.latestChapterTitle || latestChapterData?.title || item.latestChapter || "";
         const chapterParam = getChapterParam({
-            apiLink: item.apiChapterLink,
-            originalLink: item.latestChapterLink || item.originalChapterLink,
+            apiLink: item.apiChapterLink || latestChapterData?.url,
+            originalLink: item.latestChapterLink || item.originalChapterLink || latestChapterData?.originalLink,
             chapterNumber: item.chapterNumber,
             title: latestTitle,
         });
@@ -254,7 +255,7 @@
                 id: item.apiChapterLink || `${slug}-chapter-${chapterParam}`,
                 number: Number(chapterParam) || 1,
                 title: latestTitle,
-                updatedAt: item.updateTime || "",
+                updatedAt: item.updateTime || item.stats || "",
                 pages: [],
                 _comicSlug: slug,
                 _chapterParam: chapterParam,
@@ -271,11 +272,36 @@
             author: "Unknown",
             cover: item.thumbnail || item.image || cover(item.title, "24130f", "f8dfc5"),
             genres: normalizeGenres(item.genre || item.genres),
-            summary: item.updateTime || item.readers || "",
+            summary: item.description || item.sinopsis || item.updateTime || item.stats || item.readers || "",
             chapters: latestChapter,
             _newApiSlug: slug,
             _newApiLoaded: false,
         };
+    };
+
+    const getApiListFromPayload = (payload) => {
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.data)) return payload.data;
+        if (Array.isArray(payload?.results)) return payload.results;
+        if (Array.isArray(payload?.data?.results)) return payload.data.results;
+        return [];
+    };
+
+    const flattenPopularPayload = (payload) => {
+        const value = payload?.data || payload;
+        if (Array.isArray(value)) return value;
+
+        const sections = [
+            { type: "Manga", items: value?.manga?.items },
+            { type: "Manhwa", items: value?.manhwa?.items },
+            { type: "Manhua", items: value?.manhua?.items },
+        ];
+
+        return sections.flatMap((section) => {
+            return Array.isArray(section.items)
+                ? section.items.map((item) => ({ ...item, type: item.type || section.type }))
+                : [];
+        });
     };
 
     const newApiInfoToComic = (base, info) => {
@@ -353,38 +379,34 @@
     const loadLibraryFromNewApi = async () => {
         const config = window.KOMIK_CONFIG || {};
         const base = config.apiBaseUrl || "https://komiku-rest-api.vercel.app";
+        const catalogPages = Math.max(1, Number(config.apiCatalogPages || 12));
+        const coloredPages = Math.max(0, Number(config.apiColoredPages || 4));
+        const catalogPaths = Array.from({ length: catalogPages }, (_, index) => {
+            return index === 0 ? "/pustaka" : `/pustaka/page/${index + 1}`;
+        });
+        const coloredPaths = Array.from({ length: coloredPages }, (_, index) => {
+            return index === 0 ? "/berwarna" : `/berwarna/page/${index + 1}`;
+        });
 
-        // Mengambil kombinasi data komik terbaru & populer agar grid beranda penuh dan ramai
-        const [terbaruPayload, populerPayload] = await Promise.allSettled([
-            loadJson(`${base}/terbaru`),
-            loadJson(`${base}/komik-populer`),
-        ]);
+        const requests = [
+            { path: "/terbaru", pick: getApiListFromPayload },
+            { path: "/komik-populer", pick: flattenPopularPayload },
+            { path: "/rekomendasi", pick: getApiListFromPayload },
+            ...catalogPaths.map((path) => ({ path, pick: getApiListFromPayload })),
+            ...coloredPaths.map((path) => ({ path, pick: getApiListFromPayload })),
+        ];
+
+        const responses = await Promise.allSettled(
+            requests.map((request) => loadJson(`${base}${request.path}`))
+        );
 
         const combined = [];
 
-        if (terbaruPayload.status === "fulfilled") {
-            const list = terbaruPayload.value.data || terbaruPayload.value;
+        responses.forEach((response, index) => {
+            if (response.status !== "fulfilled") return;
+            const list = requests[index].pick(response.value);
             if (Array.isArray(list)) combined.push(...list);
-        }
-        if (populerPayload.status === "fulfilled") {
-            const payload = populerPayload.value.data || populerPayload.value;
-            const sections = Array.isArray(payload)
-                ? [{ items: payload }]
-                : [
-                    { type: "Manga", items: payload.manga?.items },
-                    { type: "Manhwa", items: payload.manhwa?.items },
-                    { type: "Manhua", items: payload.manhua?.items },
-                ];
-
-            sections.forEach((section) => {
-                if (Array.isArray(section.items)) {
-                    combined.push(...section.items.map((item) => ({
-                        ...item,
-                        type: item.type || section.type,
-                    })));
-                }
-            });
-        }
+        });
 
         if (combined.length === 0) throw new Error("API tidak mengembalikan data komik");
 
