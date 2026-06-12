@@ -45,9 +45,47 @@
                     <p class="eyebrow">Chapter</p>
                     <h2 id="judul-chapter">Daftar chapter</h2>
                 </div>
-                <p id="chapterCount" class="result-count">0 chapter</p>
+                <div class="chapter-actions" aria-label="Pengaturan chapter">
+                    <p id="chapterCount" class="result-count">0 chapter</p>
+                    <label class="tool-control" for="chapterSort">
+                        <span>Urut</span>
+                        <select id="chapterSort">
+                            <option value="number">Nomor chapter</option>
+                            <option value="date">Tanggal update</option>
+                            <option value="title">Judul</option>
+                        </select>
+                    </label>
+                    <button class="sort-toggle" type="button" id="chapterDirection">Terbaru dulu</button>
+                </div>
             </div>
             <div class="chapter-list" id="chapterList"></div>
+        </section>
+
+        <section class="comment-section" aria-labelledby="judul-komentar">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Diskusi</p>
+                    <h2 id="judul-komentar">Komentar</h2>
+                </div>
+                <p id="commentCount" class="result-count">0 komentar</p>
+            </div>
+
+            <div class="auth-panel">
+                <p id="authStatus">Belum login</p>
+                <form id="loginForm" class="login-form">
+                    <input id="loginName" type="text" name="name" placeholder="Nama kamu" autocomplete="name" maxlength="28" required>
+                    <button type="submit">Login</button>
+                </form>
+                <button type="button" id="logoutButton" class="ghost-button" hidden>Logout</button>
+            </div>
+
+            <form id="commentForm" class="comment-form">
+                <label for="commentText">Tulis komentar</label>
+                <textarea id="commentText" rows="4" maxlength="600" placeholder="Bagikan pendapat kamu..." required></textarea>
+                <button type="submit">Kirim komentar</button>
+            </form>
+
+            <div class="comments-list" id="commentsList"></div>
         </section>
     </main>
 
