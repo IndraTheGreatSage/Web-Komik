@@ -171,6 +171,28 @@
         return response.json();
     };
 
+    const proxyChapterImage = (imageUrl) => {
+        const config = window.KOMIK_CONFIG || {};
+        if ((config.mode || "json") !== "api") return imageUrl;
+
+        try {
+            const url = new URL(imageUrl);
+            const shouldProxy = ["img.komiku.org", "cdn.komiku.org"].includes(url.hostname);
+            if (!shouldProxy) return imageUrl;
+
+            const base = config.apiBaseUrl || "https://komiku-rest-api.vercel.app";
+            return `${base}/image-proxy?url=${encodeURIComponent(url.toString())}`;
+        } catch {
+            return imageUrl;
+        }
+    };
+
+    const normalizeApiPages = (pages) => {
+        return Array.isArray(pages)
+            ? pages.map(normalizePage).filter(Boolean).map(proxyChapterImage)
+            : [];
+    };
+
     // ─── New Express.js Komiku API Adapter ────────────────────────────────────────
 
     const getSlugFromApiItem = (item) => {
@@ -405,6 +427,7 @@
 
     const loadChapterPages = async (chapter) => {
         if (Array.isArray(chapter.pages) && chapter.pages.length > 0) {
+            chapter.pages = normalizeApiPages(chapter.pages);
             return chapter.pages;
         }
 
@@ -424,7 +447,7 @@
                 const resData = payload.data || payload;
                 if (resData) {
                     const images = resData.chapter_images || resData.images || resData.image || [];
-                    chapter.pages = Array.isArray(images) ? images.map(normalizePage).filter(Boolean) : [];
+                    chapter.pages = normalizeApiPages(images);
                     return chapter.pages;
                 }
             } catch (error) {
