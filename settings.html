@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pengaturan aplikasi KomikLoka.">
+    <title>Settings - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="./" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>Settings</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <div id="authNav" style="display: flex; gap: 8px; align-items: center;">
+                <a href="login.html" class="ghost-action">Login</a>
+                <a href="register.html" class="primary-action">Daftar</a>
+            </div>
+            <div id="userNav" style="display: none; gap: 8px; align-items: center;">
+                <a href="user-profile.html" class="ghost-action" id="profileLink">Profil</a>
+                <button id="logoutBtnHeader" class="ghost-action" style="background: none; border: none; cursor: pointer; color: inherit; font-weight: 800; padding: 0 14px;">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="settings-section" aria-labelledby="judul-settings">
+            <div class="section-heading">
+                <p class="eyebrow">Pengaturan</p>
+                <h2 id="judul-settings">Pengaturan Aplikasi</h2>
+            </div>
+
+            <div class="settings-container">
+                <div class="settings-group">
+                    <h3>Pengaturan Baca</h3>
+                    <div class="setting-item">
+                        <label for="autoContinueSetting">
+                            <input type="checkbox" id="autoContinueSetting" checked>
+                            <span>Lanjut otomatis ke chapter berikutnya</span>
+                        </label>
+                        <p class="setting-description">Otomatis lanjut ke chapter berikutnya saat mencapai akhir chapter</p>
+                    </div>
+                    <div class="setting-item">
+                        <label for="tapZoneSetting">
+                            <input type="checkbox" id="tapZoneSetting" checked>
+                            <span>Zone tap navigasi</span>
+                        </label>
+                        <p class="setting-description">Tap kiri untuk chapter sebelumnya, kanan untuk selanjutnya</p>
+                    </div>
+                    <div class="setting-item">
+                        <label for="doubleTapZoomSetting">
+                            <input type="checkbox" id="doubleTapZoomSetting" checked>
+                            <span>Zoom dengan double tap</span>
+                        </label>
+                        <p class="setting-description">Double tap pada gambar untuk zoom in/out</p>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Pengaturan Tampilan</h3>
+                    <div class="setting-item">
+                        <label for="darkMode">
+                            <input type="checkbox" id="darkMode">
+                            <span>Mode gelap</span>
+                        </label>
+                        <p class="setting-description">Aktifkan tema gelap untuk kenyamanan membaca</p>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Data & Penyimpanan</h3>
+                    <div class="setting-item">
+                        <button id="clearCache" class="ghost-action">Hapus Cache</button>
+                        <p class="setting-description">Hapus data yang tersimpan di browser</p>
+                    </div>
+                    <div class="setting-item">
+                        <button id="clearAllData" class="ghost-action" style="color: var(--ember);">Hapus Semua Data</button>
+                        <p class="setting-description">Hapus semua data termasuk history dan pustaka</p>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Tentang</h3>
+                    <div class="setting-item">
+                        <p><strong>KomikLoka</strong> v1.0.0</p>
+                        <p class="setting-description">Aplikasi baca komik web statis dengan API Komiku</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigasi bawah">
+        <a href="./" class="nav-item" data-page="discover">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-label">Discover</span>
+        </a>
+        <a href="library.html" class="nav-item" data-page="library">
+            <span class="nav-icon">📚</span>
+            <span class="nav-label">Pustaka</span>
+        </a>
+        <a href="history.html" class="nav-item" data-page="history">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">History</span>
+        </a>
+        <a href="settings.html" class="nav-item active" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+        </a>
+    </nav>
+
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Update auth nav
+        function updateAuthNav() {
+            const authNav = document.getElementById('authNav');
+            const userNav = document.getElementById('userNav');
+            
+            if (auth.isAuthenticated()) {
+                authNav.style.display = 'none';
+                userNav.style.display = 'flex';
+            } else {
+                authNav.style.display = 'flex';
+                userNav.style.display = 'none';
+            }
+        }
+
+        document.getElementById('logoutBtnHeader').addEventListener('click', () => {
+            auth.logout();
+        });
+
+        // Load settings
+        const loadSettings = () => {
+            const autoContinue = localStorage.getItem('komikloka:autoContinue') !== 'false';
+            const tapZone = localStorage.getItem('komikloka:tapZone') !== 'false';
+            const doubleTapZoom = localStorage.getItem('komikloka:doubleTapZoom') !== 'false';
+            const darkMode = localStorage.getItem('komikloka:darkMode') === 'true';
+
+            document.getElementById('autoContinueSetting').checked = autoContinue;
+            document.getElementById('tapZoneSetting').checked = tapZone;
+            document.getElementById('doubleTapZoomSetting').checked = doubleTapZoom;
+            document.getElementById('darkMode').checked = darkMode;
+
+            // Apply dark mode
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            }
+        };
+
+        // Save settings
+        const saveSettings = () => {
+            const autoContinue = document.getElementById('autoContinueSetting').checked;
+            const tapZone = document.getElementById('tapZoneSetting').checked;
+            const doubleTapZoom = document.getElementById('doubleTapZoomSetting').checked;
+            const darkMode = document.getElementById('darkMode').checked;
+
+            localStorage.setItem('komikloka:autoContinue', autoContinue);
+            localStorage.setItem('komikloka:tapZone', tapZone);
+            localStorage.setItem('komikloka:doubleTapZoom', doubleTapZoom);
+            localStorage.setItem('komikloka:darkMode', darkMode);
+
+            // Apply dark mode
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        };
+
+        // Clear cache
+        const clearCache = () => {
+            if (confirm('Hapus cache data komik?')) {
+                localStorage.removeItem('komikloka_library_cache');
+                alert('Cache berhasil dihapus');
+            }
+        };
+
+        // Clear all data
+        const clearAllData = () => {
+            if (confirm('Hapus semua data? Ini akan menghapus history, pustaka, dan pengaturan.')) {
+                const user = auth.getCurrentUser();
+                if (user) {
+                    localStorage.removeItem(`komikloka:library:${user.username}`);
+                    localStorage.removeItem(`komikloka:history:${user.username}`);
+                }
+                localStorage.removeItem('komikloka:autoContinue');
+                localStorage.removeItem('komikloka:tapZone');
+                localStorage.removeItem('komikloka:doubleTapZoom');
+                localStorage.removeItem('komikloka:darkMode');
+                alert('Semua data berhasil dihapus');
+                loadSettings();
+            }
+        };
+
+        // Event listeners
+        document.getElementById('autoContinueSetting').addEventListener('change', saveSettings);
+        document.getElementById('tapZoneSetting').addEventListener('change', saveSettings);
+        document.getElementById('doubleTapZoomSetting').addEventListener('change', saveSettings);
+        document.getElementById('darkMode').addEventListener('change', saveSettings);
+        document.getElementById('clearCache').addEventListener('click', clearCache);
+        document.getElementById('clearAllData').addEventListener('click', clearAllData);
+
+        updateAuthNav();
+        loadSettings();
+
+        // Listen for auth changes
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'komikloka_user') {
+                updateAuthNav();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -8,7 +8,7 @@
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="index.html" aria-label="KomikLoka beranda">
+        <a class="brand" href="./" aria-label="KomikLoka beranda">
             <span class="brand-mark">KL</span>
             <span>
                 <strong>KomikLoka</strong>
@@ -16,7 +16,7 @@
             </span>
         </a>
         <nav class="top-nav" aria-label="Navigasi utama">
-            <a href="index.html">Beranda</a>
+            <a href="./">Beranda</a>
             <a href="login.html" class="ghost-action">Login</a>
         </nav>
     </header>
@@ -96,7 +96,7 @@
     <script>
         // Check if already logged in
         if (auth.isAuthenticated()) {
-            window.location.href = 'index.html';
+            window.location.href = './';
         }
 
         // Handle register form submission
@@ -129,7 +129,7 @@
                 // Auto-login after registration
                 auth.login(email, password);
                 // Redirect to home page
-                window.location.href = 'index.html';
+                window.location.href = './';
             } else {
                 // Show error
                 registerError.textContent = result.error;

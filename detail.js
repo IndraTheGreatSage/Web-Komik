@@ -85,7 +85,7 @@
                     <p class="eyebrow">Tidak ditemukan</p>
                     <h1>Komik belum ada di katalog.</h1>
                     <p>Pastikan link yang dibuka benar atau pastikan koneksi internet ke API lancar.</p>
-                    <a class="primary-action" href="index.html">Kembali ke katalog</a>
+                    <a class="primary-action" href="./">Kembali ke katalog</a>
                 </section>
             `;
         }
@@ -177,6 +177,7 @@
     const clearSearchEl = document.getElementById("clearSearch");
     const chapterShowMoreEl = document.getElementById("chapterShowMore");
     const showAllChaptersEl = document.getElementById("showAllChapters");
+    const addToLibraryEl = document.getElementById("addToLibrary");
     
     let chapterSortPreference = getSortPreference();
     let showAllChapters = false;
@@ -293,6 +294,68 @@
     }
 
     renderChapterList();
+
+    // Library functionality
+    const isInLibrary = () => {
+        const user = auth.getCurrentUser();
+        if (!user) return false;
+        
+        const libraryKey = `komikloka:library:${user.username}`;
+        const libraryData = localStorage.getItem(libraryKey);
+        const libraryIds = libraryData ? JSON.parse(libraryData) : [];
+        return libraryIds.includes(comic.id);
+    };
+
+    const updateLibraryButton = () => {
+        if (!addToLibraryEl) return;
+        
+        const user = auth.getCurrentUser();
+        if (!user) {
+            addToLibraryEl.hidden = true;
+            return;
+        }
+        
+        addToLibraryEl.hidden = false;
+        
+        if (isInLibrary()) {
+            addToLibraryEl.textContent = "Hapus dari Pustaka";
+            addToLibraryEl.classList.add("active");
+        } else {
+            addToLibraryEl.textContent = "Tambah ke Pustaka";
+            addToLibraryEl.classList.remove("active");
+        }
+    };
+
+    const toggleLibrary = () => {
+        const user = auth.getCurrentUser();
+        if (!user) {
+            alert("Login untuk menambah komik ke pustaka");
+            return;
+        }
+
+        const libraryKey = `komikloka:library:${user.username}`;
+        const libraryData = localStorage.getItem(libraryKey);
+        const libraryIds = libraryData ? JSON.parse(libraryData) : [];
+
+        if (libraryIds.includes(comic.id)) {
+            // Remove from library
+            const index = libraryIds.indexOf(comic.id);
+            libraryIds.splice(index, 1);
+            localStorage.setItem(libraryKey, JSON.stringify(libraryIds));
+        } else {
+            // Add to library
+            libraryIds.push(comic.id);
+            localStorage.setItem(libraryKey, JSON.stringify(libraryIds));
+        }
+
+        updateLibraryButton();
+    };
+
+    if (addToLibraryEl) {
+        addToLibraryEl.addEventListener("click", toggleLibrary);
+    }
+
+    updateLibraryButton();
 
     // New Improved Comment System
     const getCommentsKey = () => `komikloka:comments:${comic.id}`;

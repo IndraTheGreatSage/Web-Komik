@@ -71,7 +71,7 @@
                     <p class="eyebrow">Tidak ditemukan</p>
                     <h1>Chapter belum tersedia.</h1>
                     <p>Pastikan link yang dibuka benar atau periksa koneksi internet kamu.</p>
-                    <a class="primary-action" href="index.html">Kembali ke katalog</a>
+                    <a class="primary-action" href="./">Kembali ke katalog</a>
                 </section>
             `;
         }
@@ -276,6 +276,28 @@
 
         localStorage.setItem(`komikloka:last:${comic.id}`, chapter.id);
         window.history.replaceState({}, "", getReadUrl(chapter));
+
+        // Track reading history
+        const user = window.auth ? window.auth.getCurrentUser() : null;
+        if (user) {
+            const historyKey = `komikloka:history:${user.username}`;
+            const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            
+            // Remove existing entry for this comic
+            const filteredHistory = history.filter(h => h.comicId !== comic.id);
+            
+            // Add new entry at the beginning
+            filteredHistory.unshift({
+                comicId: comic.id,
+                chapterId: chapter.id,
+                lastRead: new Date().toISOString()
+            });
+            
+            // Keep only last 50 entries
+            const trimmedHistory = filteredHistory.slice(0, 50);
+            
+            localStorage.setItem(historyKey, JSON.stringify(trimmedHistory));
+        }
 
         if (readerPages) readerPages.innerHTML = '<p class="reader-loading">Memuat halaman chapter...</p>';
 

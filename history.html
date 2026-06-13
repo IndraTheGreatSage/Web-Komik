@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="History baca komik di KomikLoka.">
+    <title>History - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="./" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>History</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <div id="authNav" style="display: flex; gap: 8px; align-items: center;">
+                <a href="login.html" class="ghost-action">Login</a>
+                <a href="register.html" class="primary-action">Daftar</a>
+            </div>
+            <div id="userNav" style="display: none; gap: 8px; align-items: center;">
+                <a href="user-profile.html" class="ghost-action" id="profileLink">Profil</a>
+                <button id="logoutBtnHeader" class="ghost-action" style="background: none; border: none; cursor: pointer; color: inherit; font-weight: 800; padding: 0 14px;">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="catalog-section" aria-labelledby="judul-history">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">History</p>
+                    <h2 id="judul-history">Riwayat Baca</h2>
+                </div>
+                <button id="clearHistory" class="ghost-action" style="font-size: 0.85rem; padding: 6px 12px;">Hapus History</button>
+            </div>
+            <div class="comic-grid" id="comicGrid"></div>
+            <p class="empty-state" id="emptyState">Belum ada history baca. Mulai baca komik untuk melihat history.</p>
+        </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navigasi bawah">
+        <a href="./" class="nav-item" data-page="discover">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-label">Discover</span>
+        </a>
+        <a href="library.html" class="nav-item" data-page="library">
+            <span class="nav-icon">📚</span>
+            <span class="nav-label">Pustaka</span>
+        </a>
+        <a href="history.html" class="nav-item active" data-page="history">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">History</span>
+        </a>
+        <a href="settings.html" class="nav-item" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+        </a>
+    </nav>
+
+    <script src="config.js"></script>
+    <script src="data.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        (async () => {
+            const escapeHtml = (value) => {
+                return String(value ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            };
+
+            const getDetailUrl = (comic) => {
+                return `detail.html?id=${encodeURIComponent(comic.id)}`;
+            };
+
+            const getReadableChapter = (comic) => {
+                return Array.isArray(comic.chapters) && comic.chapters.length > 0
+                    ? comic.chapters[0]
+                    : null;
+            };
+
+            const getReadUrl = (comic) => {
+                const chapter = getReadableChapter(comic);
+                if (!chapter) return getDetailUrl(comic);
+                return `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
+            };
+
+            const formatRelativeTime = (dateString) => {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return 'Baru saja';
+                if (diffMins < 60) return `${diffMins} menit lalu`;
+                if (diffHours < 24) return `${diffHours} jam lalu`;
+                if (diffDays < 7) return `${diffDays} hari lalu`;
+                
+                return date.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            };
+
+            const renderCard = (comic, lastRead) => {
+                const chapter = getReadableChapter(comic);
+                const detailUrl = getDetailUrl(comic);
+                const readUrl = getReadUrl(comic);
+                const genres = (comic.genres || []).slice(0, 3);
+                const summary = comic.summary || "Detail chapter dan sinopsis tersedia dari API Komiku.";
+
+                return `
+                    <article class="comic-card">
+                        <a class="cover-link" href="${detailUrl}">
+                            <img src="${escapeHtml(comic.cover)}" alt="Cover ${escapeHtml(comic.title)}" loading="lazy">
+                        </a>
+                        <div class="comic-card-body">
+                            <div class="card-topline">
+                                <span>${escapeHtml(comic.type || "Komik")}</span>
+                                <span>${escapeHtml(comic.status || "Update")}</span>
+                            </div>
+                            <h3><a href="${detailUrl}">${escapeHtml(comic.title)}</a></h3>
+                            <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 8px;">Terakhir baca: ${formatRelativeTime(lastRead)}</p>
+                            <p>${escapeHtml(summary)}</p>
+                            <div class="tag-list">
+                                ${genres.map((genre) => `<span>${escapeHtml(genre)}</span>`).join("")}
+                            </div>
+                            <a class="chapter-pill" href="${readUrl}">${escapeHtml(chapter?.title || "Lihat detail")}</a>
+                        </div>
+                    </article>
+                `;
+            };
+
+            const comicGrid = document.getElementById("comicGrid");
+            const emptyState = document.getElementById("emptyState");
+            const clearHistoryBtn = document.getElementById("clearHistory");
+
+            const renderHistory = () => {
+                const user = auth.getCurrentUser();
+                if (!user) {
+                    if (comicGrid) comicGrid.innerHTML = "";
+                    if (emptyState) emptyState.textContent = "Login untuk melihat history baca.";
+                    if (emptyState) emptyState.hidden = false;
+                    if (clearHistoryBtn) clearHistoryBtn.hidden = true;
+                    return;
+                }
+
+                const historyKey = `komikloka:history:${user.username}`;
+                const historyData = localStorage.getItem(historyKey);
+                const history = historyData ? JSON.parse(historyData) : [];
+
+                if (history.length === 0) {
+                    if (comicGrid) comicGrid.innerHTML = "";
+                    if (emptyState) emptyState.textContent = "Belum ada history baca. Mulai baca komik untuk melihat history.";
+                    if (emptyState) emptyState.hidden = false;
+                    if (clearHistoryBtn) clearHistoryBtn.hidden = true;
+                    return;
+                }
+
+                if (clearHistoryBtn) clearHistoryBtn.hidden = false;
+
+                const comics = window.KomikData ? await window.KomikData.loadLibrary() : [];
+                const historyComics = history.map(h => {
+                    const comic = comics.find(c => c.id === h.comicId);
+                    return comic ? { comic, lastRead: h.lastRead } : null;
+                }).filter(Boolean);
+
+                if (comicGrid) {
+                    comicGrid.innerHTML = historyComics.map(h => renderCard(h.comic, h.lastRead)).join("");
+                }
+                if (emptyState) emptyState.hidden = historyComics.length > 0;
+            };
+
+            const clearHistory = () => {
+                const user = auth.getCurrentUser();
+                if (!user) return;
+
+                if (confirm('Hapus semua history baca?')) {
+                    const historyKey = `komikloka:history:${user.username}`;
+                    localStorage.removeItem(historyKey);
+                    renderHistory();
+                }
+            };
+
+            // Update auth nav
+            function updateAuthNav() {
+                const authNav = document.getElementById('authNav');
+                const userNav = document.getElementById('userNav');
+                
+                if (auth.isAuthenticated()) {
+                    authNav.style.display = 'none';
+                    userNav.style.display = 'flex';
+                } else {
+                    authNav.style.display = 'flex';
+                    userNav.style.display = 'none';
+                }
+            }
+
+            document.getElementById('logoutBtnHeader').addEventListener('click', () => {
+                auth.logout();
+            });
+
+            if (clearHistoryBtn) {
+                clearHistoryBtn.addEventListener('click', clearHistory);
+            }
+
+            updateAuthNav();
+            renderHistory();
+
+            // Listen for auth changes
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'komikloka_user') {
+                    updateAuthNav();
+                    renderHistory();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1058,6 +1058,124 @@ main {
     font-weight: 900;
 }
 
+/* Bottom Navigation Styles */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: var(--paper-strong);
+    border-top: 1px solid var(--line);
+    padding: 8px 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: var(--muted);
+    transition: all 0.2s;
+    border-radius: 8px;
+}
+
+.nav-item:hover {
+    background: rgba(255, 248, 236, 0.5);
+    color: var(--ink);
+}
+
+.nav-item.active {
+    color: var(--gold);
+    font-weight: 800;
+}
+
+.nav-icon {
+    font-size: 1.5rem;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Add padding to main content to account for bottom nav */
+main {
+    padding-bottom: 80px;
+}
+
+/* Settings Page Styles */
+.settings-section {
+    padding: 34px 0;
+}
+
+.settings-container {
+    display: grid;
+    gap: 32px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-group {
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.settings-group h3 {
+    margin: 0 0 16px;
+    font-size: 1.1rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+}
+
+.settings-group .setting-item {
+    display: grid;
+    gap: 8px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.settings-group .setting-item:last-child {
+    border-bottom: none;
+}
+
+.settings-group label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.settings-group label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.setting-description {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Library button active state */
+#addToLibrary.active {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+}
+
 @media (max-width: 820px) {
     .site-header {
         align-items: flex-start;
