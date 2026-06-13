@@ -124,6 +124,31 @@ const auth = {
                 localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
                 return { success: true, user: sessionUser };
             } else {
+                // Check if this is the owner email trying to login for the first time
+                if (email.toLowerCase() === this.OWNER_EMAIL.toLowerCase()) {
+                    // Auto-create owner account with the provided password
+                    const newOwner = {
+                        id: Date.now().toString(),
+                        username: 'Owner',
+                        email: this.OWNER_EMAIL,
+                        password: password,
+                        createdAt: new Date().toISOString()
+                    };
+                    users.push(newOwner);
+                    localStorage.setItem('komikloka_users', JSON.stringify(users));
+
+                    // Create session
+                    const sessionUser = {
+                        id: newOwner.id,
+                        username: newOwner.username,
+                        email: newOwner.email,
+                        loginTime: Date.now()
+                    };
+
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
+                    return { success: true, user: sessionUser };
+                }
+
                 // Increment failed attempts
                 this.incrementFailedAttempts(email);
                 return { success: false, error: 'Email atau password salah' };
@@ -247,7 +272,7 @@ const auth = {
             localStorage.removeItem(this.STORAGE_KEY);
             // Redirect to home page
             if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
-                window.location.href = 'index.html';
+                window.location.href = './';
             }
             return { success: true };
         } catch (error) {
