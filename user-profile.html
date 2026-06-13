@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Profil Pengguna - KomikLoka">
+    <title>Profil - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>Manhua, manhwa, manga</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <button id="logoutBtn" class="ghost-action">Logout</button>
+        </nav>
+    </header>
+
+    <main class="profile-container">
+        <aside class="profile-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar" id="profileAvatar">
+                    <span id="avatarInitials"></span>
+                </div>
+                <h2 id="profileUsername"></h2>
+                <p id="profileEmail"></p>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="readingCount">0</span>
+                        <span class="stat-label">Sedang Dibaca</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="favoritesCount">0</span>
+                        <span class="stat-label">Favorit</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="profile-menu">
+                <button class="menu-item active" data-section="overview">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Ringkasan</span>
+                </button>
+                <button class="menu-item" data-section="reading">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <span>Sedang Dibaca</span>
+                </button>
+                <button class="menu-item" data-section="favorites">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span>Favorit</span>
+                </button>
+                <button class="menu-item" data-section="settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m3.08 3.08l4.24 4.24M1 12h6m6 0h6m-16.78 7.78l4.24-4.24m3.08-3.08l4.24-4.24"></path>
+                    </svg>
+                    <span>Pengaturan</span>
+                </button>
+            </nav>
+        </aside>
+
+        <section class="profile-content">
+            <!-- Overview Section -->
+            <section id="overview" class="profile-section active">
+                <div class="section-header">
+                    <h1>Ringkasan Akun</h1>
+                </div>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>Informasi Dasar</h3>
+                        <div class="info-item">
+                            <label>Username</label>
+                            <p id="infoUsername"></p>
+                        </div>
+                        <div class="info-item">
+                            <label>Email</label>
+                            <p id="infoEmail"></p>
+                        </div>
+                        <div class="info-item">
+                            <label>Tanggal Bergabung</label>
+                            <p id="joinDate"></p>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Aktivitas Terbaru</h3>
+                        <div class="activity-list" id="recentActivity">
+                            <p class="empty-state">Tidak ada aktivitas terbaru</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reading Section -->
+            <section id="reading" class="profile-section">
+                <div class="section-header">
+                    <h1>Sedang Dibaca</h1>
+                    <p class="section-subtitle">Komik yang sedang Anda baca</p>
+                </div>
+                <div class="reading-list" id="readingList">
+                    <p class="empty-state">Belum ada komik yang dibaca</p>
+                </div>
+            </section>
+
+            <!-- Favorites Section -->
+            <section id="favorites" class="profile-section">
+                <div class="section-header">
+                    <h1>Favorit Saya</h1>
+                    <p class="section-subtitle">Koleksi komik favorit Anda</p>
+                </div>
+                <div class="favorites-grid" id="favoritesList">
+                    <p class="empty-state">Belum ada favorit</p>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="profile-section">
+                <div class="section-header">
+                    <h1>Pengaturan Akun</h1>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Keamanan Password</h3>
+                    <button class="ghost-action" id="changePasswordBtn">Ubah Password</button>
+                </div>
+
+                <div class="settings-card">
+                    <h3>Preferensi</h3>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="notificationSettings" checked>
+                            <span>Terima notifikasi komik baru</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" id="emailUpdates" checked>
+                            <span>Langganan email bulanan</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-card danger">
+                    <h3>Zona Bahaya</h3>
+                    <p>Tindakan ini tidak dapat dibatalkan</p>
+                    <button class="primary-action" style="background-color: #dc2626;" id="deleteAccountBtn">
+                        Hapus Akun Selamanya
+                    </button>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ubah Password</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="changePasswordForm" class="modal-body">
+                <div class="form-group">
+                    <label for="currentPassword">Password Saat Ini</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Password Baru</label>
+                    <input type="password" id="newPassword" name="newPassword" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Konfirmasi Password Baru</label>
+                    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required minlength="8">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="ghost-action" id="cancelPassword">Batal</button>
+                    <button type="submit" class="primary-action">Simpan Password Baru</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
