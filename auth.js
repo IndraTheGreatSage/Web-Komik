@@ -2,7 +2,10 @@
 const auth = {
     // Storage keys
     STORAGE_KEY: 'komikloka_user',
-    
+    OWNER_EMAIL: 'owner@komikloka.com',
+    VERIFIED_USERS_KEY: 'komikloka_verified_users',
+    FAILED_ATTEMPTS_KEY: 'komikloka_failed_attempts',
+
     // Initialize auth
     init() {
         this.checkSession();
@@ -18,10 +21,46 @@ const auth = {
     getCurrentUser() {
         try {
             const userData = localStorage.getItem(this.STORAGE_KEY);
-            return userData ? JSON.parse(userData) : null;
+            const user = userData ? JSON.parse(userData) : null;
+            if (user) {
+                // Add role information
+                user.isOwner = user.email === this.OWNER_EMAIL;
+                user.isVerified = this.isVerified(user.email);
+            }
+            return user;
         } catch (error) {
             console.error('Error getting current user:', error);
             return null;
+        }
+    },
+
+    // Check if user is verified
+    isVerified(email) {
+        try {
+            const verifiedUsers = JSON.parse(localStorage.getItem(this.VERIFIED_USERS_KEY) || '[]');
+            return verifiedUsers.includes(email.toLowerCase());
+        } catch {
+            return false;
+        }
+    },
+
+    // Verify user (for admin use)
+    verifyUser(email) {
+        try {
+            const currentUser = this.getCurrentUser();
+            if (!currentUser || !currentUser.isOwner) {
+                return { success: false, error: 'Hanya owner yang bisa verifikasi user' };
+            }
+
+            const verifiedUsers = JSON.parse(localStorage.getItem(this.VERIFIED_USERS_KEY) || '[]');
+            if (!verifiedUsers.includes(email.toLowerCase())) {
+                verifiedUsers.push(email.toLowerCase());
+                localStorage.setItem(this.VERIFIED_USERS_KEY, JSON.stringify(verifiedUsers));
+            }
+            return { success: true };
+        } catch (error) {
+            console.error('Verify user error:', error);
+            return { success: false, error: 'Terjadi kesalahan saat verifikasi' };
         }
     },
     
@@ -41,18 +80,39 @@ const auth = {
     },
     
     // Login user
-    login(email, password) {
+    login(email, password, captchaAnswer = null) {
         try {
+            // Check rate limiting
+            const failedAttempts = this.getFailedAttempts(email);
+            if (failedAttempts >= 5) {
+                return { success: false, error: 'Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.' };
+            }
+
+            // Check CAPTCHA for suspicious activity
+            if (failedAttempts >= 3) {
+                if (!captchaAnswer) {
+                    return { success: false, error: 'CAPTCHA_REQUIRED', requiresCaptcha: true };
+                }
+                // Validate CAPTCHA (simple math check)
+                const captchaNum = parseInt(captchaAnswer);
+                if (isNaN(captchaNum)) {
+                    return { success: false, error: 'Jawaban CAPTCHA tidak valid' };
+                }
+            }
+
             // Get registered users from localStorage
             const users = this.getUsers();
-            
+
             // Find user with matching email and password
-            const user = users.find(u => 
-                u.email.toLowerCase() === email.toLowerCase() && 
+            const user = users.find(u =>
+                u.email.toLowerCase() === email.toLowerCase() &&
                 u.password === password
             );
-            
+
             if (user) {
+                // Reset failed attempts on successful login
+                this.resetFailedAttempts(email);
+
                 // Create session
                 const sessionUser = {
                     id: user.id,
@@ -60,15 +120,64 @@ const auth = {
                     email: user.email,
                     loginTime: Date.now()
                 };
-                
+
                 localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
                 return { success: true, user: sessionUser };
             } else {
+                // Increment failed attempts
+                this.incrementFailedAttempts(email);
                 return { success: false, error: 'Email atau password salah' };
             }
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, error: 'Terjadi kesalahan saat login' };
+        }
+    },
+
+    // Get failed attempts count
+    getFailedAttempts(email) {
+        try {
+            const attempts = JSON.parse(localStorage.getItem(this.FAILED_ATTEMPTS_KEY) || '{}');
+            const userAttempts = attempts[email.toLowerCase()] || { count: 0, timestamp: 0 };
+
+            // Reset if 15 minutes have passed
+            const now = Date.now();
+            if (now - userAttempts.timestamp > 15 * 60 * 1000) {
+                delete attempts[email.toLowerCase()];
+                localStorage.setItem(this.FAILED_ATTEMPTS_KEY, JSON.stringify(attempts));
+                return 0;
+            }
+
+            return userAttempts.count;
+        } catch {
+            return 0;
+        }
+    },
+
+    // Increment failed attempts
+    incrementFailedAttempts(email) {
+        try {
+            const attempts = JSON.parse(localStorage.getItem(this.FAILED_ATTEMPTS_KEY) || '{}');
+            const userAttempts = attempts[email.toLowerCase()] || { count: 0, timestamp: 0 };
+
+            userAttempts.count++;
+            userAttempts.timestamp = Date.now();
+            attempts[email.toLowerCase()] = userAttempts;
+
+            localStorage.setItem(this.FAILED_ATTEMPTS_KEY, JSON.stringify(attempts));
+        } catch (error) {
+            console.error('Increment failed attempts error:', error);
+        }
+    },
+
+    // Reset failed attempts
+    resetFailedAttempts(email) {
+        try {
+            const attempts = JSON.parse(localStorage.getItem(this.FAILED_ATTEMPTS_KEY) || '{}');
+            delete attempts[email.toLowerCase()];
+            localStorage.setItem(this.FAILED_ATTEMPTS_KEY, JSON.stringify(attempts));
+        } catch (error) {
+            console.error('Reset failed attempts error:', error);
         }
     },
     

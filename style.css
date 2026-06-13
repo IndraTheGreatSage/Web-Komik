@@ -1176,6 +1176,53 @@ main {
     border-color: var(--gold);
 }
 
+/* CAPTCHA Styles */
+.captcha-container {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 248, 236, 0.3);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.captcha-container label {
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    display: block;
+}
+
+#captchaQuestion {
+    font-weight: 900;
+    color: var(--gold);
+    font-size: 1.1rem;
+}
+
+/* Owner Badge Styles */
+.owner-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: var(--ink);
+    font-size: 0.7rem;
+    font-weight: 900;
+    border-radius: 12px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.verified-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 900;
+    border-radius: 12px;
+    margin-left: 4px;
+}
+
 @media (max-width: 820px) {
     .site-header {
         align-items: flex-start;

@@ -471,8 +471,10 @@
         commentsList.innerHTML = comments.map(comment => {
             const currentUser = auth.getCurrentUser();
             const isOwner = currentUser && currentUser.username === comment.author;
+            const commentUserIsOwner = comment.author === auth.OWNER_EMAIL || comment.author.toLowerCase() === 'owner';
+            const commentUserIsVerified = auth.isVerified(comment.author + '@komikloka.com');
             const timeAgo = formatRelativeTime(comment.createdAt);
-            
+
             return `
                 <article class="comment-card" data-comment-id="${escapeHtml(comment.id)}">
                     <div class="comment-avatar" style="background: ${getUserAvatar(comment.author)}">
@@ -482,6 +484,8 @@
                         <div class="comment-header">
                             <div class="comment-author">
                                 <strong>${escapeHtml(comment.author)}</strong>
+                                ${commentUserIsOwner ? '<span class="owner-badge">Owner</span>' : ''}
+                                ${commentUserIsVerified ? '<span class="verified-badge">✓ Verified</span>' : ''}
                                 ${isOwner ? '<span class="comment-badge">Penulis</span>' : ''}
                             </div>
                             <time class="comment-time" datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(timeAgo)}</time>

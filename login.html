@@ -44,18 +44,30 @@
                     
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            required 
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
                             placeholder="Masukkan password"
                             autocomplete="current-password"
                         >
                     </div>
-                    
+
+                    <div id="captchaContainer" class="captcha-container" hidden>
+                        <label for="captchaAnswer">Verifikasi: Berapa hasil <span id="captchaQuestion"></span>?</label>
+                        <input
+                            type="text"
+                            id="captchaAnswer"
+                            name="captchaAnswer"
+                            required
+                            placeholder="Masukkan jawaban"
+                            autocomplete="off"
+                        >
+                    </div>
+
                     <div id="loginError" class="error-message" hidden></div>
-                    
+
                     <button type="submit" class="primary-action full-width">Login</button>
                 </form>
                 
@@ -73,30 +85,68 @@
             window.location.href = './';
         }
 
+        // CAPTCHA logic
+        let captchaAnswer = 0;
+
+        const generateCaptcha = () => {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            captchaAnswer = num1 + num2;
+            document.getElementById('captchaQuestion').textContent = `${num1} + ${num2}`;
+        };
+
+        const showCaptcha = () => {
+            const captchaContainer = document.getElementById('captchaContainer');
+            if (captchaContainer) {
+                captchaContainer.hidden = false;
+                generateCaptcha();
+            }
+        };
+
+        const hideCaptcha = () => {
+            const captchaContainer = document.getElementById('captchaContainer');
+            if (captchaContainer) {
+                captchaContainer.hidden = true;
+                document.getElementById('captchaAnswer').value = '';
+            }
+        };
+
         // Handle login form submission
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('loginError');
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            
+            const captchaInput = document.getElementById('captchaAnswer').value;
+
             // Clear previous error
             loginError.hidden = true;
             loginError.textContent = '';
-            
+
             // Attempt login
-            const result = auth.login(email, password);
-            
+            const result = auth.login(email, password, captchaInput);
+
             if (result.success) {
                 // Redirect to home page
                 window.location.href = './';
+            } else if (result.error === 'CAPTCHA_REQUIRED') {
+                // Show CAPTCHA
+                showCaptcha();
+                loginError.textContent = 'Silakan selesaikan verifikasi untuk melanjutkan';
+                loginError.hidden = false;
             } else {
                 // Show error
                 loginError.textContent = result.error;
                 loginError.hidden = false;
+
+                // Check if CAPTCHA should be shown
+                const failedAttempts = auth.getFailedAttempts(email);
+                if (failedAttempts >= 3) {
+                    showCaptcha();
+                }
             }
         });
     </script>
