@@ -3,7 +3,6 @@
     const params = new URLSearchParams(window.location.search);
     const comicId = params.get("id");
     const comic = comics.find((item) => item.id === comicId);
-    const AUTH_KEY = "komikloka:authUser";
 
     const escapeHtml = (value) => {
         return String(value ?? "")
@@ -80,17 +79,6 @@
 
     const getCommentsKey = () => `komikloka:comments:${comic.id}`;
 
-    const getCurrentUser = () => safeJsonParse(localStorage.getItem(AUTH_KEY), null);
-
-    const saveCurrentUser = (name) => {
-        const user = {
-            name,
-            loggedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(AUTH_KEY, JSON.stringify(user));
-        return user;
-    };
-
     const loadComments = () => safeJsonParse(localStorage.getItem(getCommentsKey()), []);
 
     const saveComments = (comments) => {
@@ -114,7 +102,7 @@
     const formatDate = (value) => {
         if (!value) return "Belum ada tanggal";
         const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return value; // Amankan format teks bawaan API seperti "1 minggu yang lalu"
+        if (Number.isNaN(date.getTime())) return value;
 
         return date.toLocaleDateString("id-ID", {
             day: "2-digit",
@@ -128,7 +116,7 @@
         return;
     }
 
-    // Menarik daftar chapter secara live dari API Vercel baru (Lazy Load)
+    // Load comic detail
     if (window.KomikData.loadComicDetail) {
         await window.KomikData.loadComicDetail(comic);
     }
@@ -143,7 +131,6 @@
 
     document.title = `${comic.title} - KomikLoka`;
     
-    // Render data ke elemen HTML pendukung
     const coverEl = document.getElementById("detailCover");
     if (coverEl) {
         coverEl.src = comic.cover;
@@ -170,7 +157,6 @@
         chapterCountEl.textContent = `${comic.chapters ? comic.chapters.length : 0} chapter`;
     }
 
-    // Penyesuaian tampilan rating agar fleksibel mengikuti format angka dari API baru
     const displayRating = comic.rating && comic.rating !== "-" 
         ? (comic.rating.includes("/5") || comic.rating.includes("/10") ? comic.rating : `⭐ ${comic.rating}`)
         : "-";
@@ -244,8 +230,7 @@
     renderChapterList();
 
     const authStatusEl = document.getElementById("authStatus");
-    const loginFormEl = document.getElementById("loginForm");
-    const loginNameEl = document.getElementById("loginName");
+    const loginPromptEl = document.getElementById("loginPrompt");
     const logoutButtonEl = document.getElementById("logoutButton");
     const commentFormEl = document.getElementById("commentForm");
     const commentTextEl = document.getElementById("commentText");
@@ -253,11 +238,13 @@
     const commentCountEl = document.getElementById("commentCount");
 
     const renderAuth = () => {
-        const user = getCurrentUser();
+        const user = auth.getUser();
         if (authStatusEl) {
-            authStatusEl.textContent = user ? `Login sebagai ${user.name}` : "Belum login";
+            authStatusEl.textContent = user ? `Login sebagai ${user.username}` : "Belum login";
         }
-        if (loginFormEl) loginFormEl.hidden = Boolean(user);
+        if (loginPromptEl) {
+            loginPromptEl.style.display = user ? "none" : "block";
+        }
         if (logoutButtonEl) logoutButtonEl.hidden = !user;
         if (commentTextEl) {
             commentTextEl.disabled = !user;
@@ -311,36 +298,23 @@
         }).join("");
     };
 
-    if (loginFormEl) {
-        loginFormEl.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const name = String(loginNameEl?.value || "").trim().replace(/\s+/g, " ");
-            if (!name) return;
-
-            saveCurrentUser(name.slice(0, 28));
-            loginFormEl.reset();
-            renderAuth();
-        });
-    }
-
     if (logoutButtonEl) {
         logoutButtonEl.addEventListener("click", () => {
-            localStorage.removeItem(AUTH_KEY);
-            renderAuth();
+            auth.logout();
         });
     }
 
     if (commentFormEl) {
         commentFormEl.addEventListener("submit", (event) => {
             event.preventDefault();
-            const user = getCurrentUser();
+            const user = auth.getUser();
             const text = String(commentTextEl?.value || "").trim();
             if (!user || !text) return;
 
             const comments = loadComments();
             comments.push({
                 id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-                author: user.name,
+                author: user.username,
                 text: text.slice(0, 600),
                 createdAt: new Date().toISOString(),
             });
