@@ -58,7 +58,25 @@
                     <button class="sort-toggle" type="button" id="chapterDirection">Terbaru dulu</button>
                 </div>
             </div>
+            
+            <div class="chapter-search-wrapper">
+                <input 
+                    type="search" 
+                    id="chapterSearch" 
+                    placeholder="Cari chapter..." 
+                    autocomplete="off"
+                >
+                <button type="button" id="clearSearch" class="ghost-action" hidden>✕</button>
+            </div>
+
             <div class="chapter-list" id="chapterList"></div>
+            
+            <div class="chapter-show-more" id="chapterShowMore" hidden>
+                <button type="button" id="showAllChapters" class="ghost-action">
+                    <span>Tampilkan semua chapter</span>
+                    <span class="arrow-icon">▼</span>
+                </button>
+            </div>
         </section>
 
         <section class="comment-section" aria-labelledby="judul-komentar">

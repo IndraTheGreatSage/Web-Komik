@@ -466,6 +466,89 @@ main {
     gap: 10px;
 }
 
+.chapter-search-wrapper {
+    position: relative;
+    margin: 16px 0;
+}
+
+.chapter-search-wrapper input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 44px 0 14px;
+    border: 2px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper-strong);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chapter-search-wrapper input:focus {
+    border-color: var(--ink);
+}
+
+.chapter-search-wrapper button {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    min-height: 32px;
+    width: 32px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: rgba(255, 248, 236, 0.8);
+    color: var(--muted);
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chapter-search-wrapper button:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: rgba(255, 248, 236, 1);
+}
+
+.chapter-show-more {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.chapter-show-more button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: rgba(255, 248, 236, 0.8);
+    color: var(--ink);
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chapter-show-more button:hover {
+    border-color: var(--ink);
+    background: rgba(255, 248, 236, 1);
+    transform: translateY(-1px);
+}
+
+.arrow-icon {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.empty-chapters {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
 .chapter-row {
     display: flex;
     align-items: center;

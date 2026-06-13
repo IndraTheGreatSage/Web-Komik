@@ -173,13 +173,34 @@
     const chapterListEl = document.getElementById("chapterList");
     const chapterSortEl = document.getElementById("chapterSort");
     const chapterDirectionEl = document.getElementById("chapterDirection");
+    const chapterSearchEl = document.getElementById("chapterSearch");
+    const clearSearchEl = document.getElementById("clearSearch");
+    const chapterShowMoreEl = document.getElementById("chapterShowMore");
+    const showAllChaptersEl = document.getElementById("showAllChapters");
+    
     let chapterSortPreference = getSortPreference();
+    let showAllChapters = false;
+    let searchQuery = "";
 
     const renderChapterList = () => {
         if (!chapterListEl || !comic.chapters) return;
 
-        const sortedChapters = getSortedChapters(comic.chapters, chapterSortPreference);
-        chapterListEl.innerHTML = sortedChapters.map((chapter) => {
+        let sortedChapters = getSortedChapters(comic.chapters, chapterSortPreference);
+        
+        // Filter by search query
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            sortedChapters = sortedChapters.filter(chapter => 
+                chapter.title.toLowerCase().includes(query)
+            );
+        }
+
+        // Show only 3 chapters if not showing all and not searching
+        const displayChapters = (showAllChapters || searchQuery) 
+            ? sortedChapters 
+            : sortedChapters.slice(0, 3);
+
+        chapterListEl.innerHTML = displayChapters.map((chapter) => {
             const chapterUrl = `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
             const date = formatDate(chapter.updatedAt);
 
@@ -190,6 +211,28 @@
                 </a>
             `;
         }).join("");
+
+        // Show/hide "show all" button
+        if (chapterShowMoreEl) {
+            const shouldShowButton = !searchQuery && sortedChapters.length > 3;
+            chapterShowMoreEl.hidden = !shouldShowButton;
+            
+            if (shouldShowButton && showAllChaptersEl) {
+                showAllChaptersEl.querySelector('span:first-child').textContent = 
+                    showAllChapters ? "Tampilkan sedikit" : "Tampilkan semua chapter";
+                showAllChaptersEl.querySelector('.arrow-icon').textContent = 
+                    showAllChapters ? "▲" : "▼";
+            }
+        }
+
+        // Update empty state
+        if (sortedChapters.length === 0 && searchQuery) {
+            chapterListEl.innerHTML = `
+                <div class="empty-chapters">
+                    <p>Tidak ada chapter yang cocok dengan pencarian "${escapeHtml(searchQuery)}"</p>
+                </div>
+            `;
+        }
 
         if (chapterSortEl) chapterSortEl.value = chapterSortPreference.sortBy;
         if (chapterDirectionEl) chapterDirectionEl.textContent = getDirectionLabel(chapterSortPreference);
@@ -215,6 +258,36 @@
                 direction: chapterSortPreference.direction === "asc" ? "desc" : "asc",
             };
             saveSortPreference(chapterSortPreference);
+            renderChapterList();
+        });
+    }
+
+    // Search functionality
+    if (chapterSearchEl) {
+        chapterSearchEl.addEventListener("input", (e) => {
+            searchQuery = e.target.value.trim();
+            if (clearSearchEl) {
+                clearSearchEl.hidden = !searchQuery;
+            }
+            renderChapterList();
+        });
+    }
+
+    if (clearSearchEl) {
+        clearSearchEl.addEventListener("click", () => {
+            searchQuery = "";
+            if (chapterSearchEl) {
+                chapterSearchEl.value = "";
+            }
+            clearSearchEl.hidden = true;
+            renderChapterList();
+        });
+    }
+
+    // Show/hide all chapters
+    if (showAllChaptersEl) {
+        showAllChaptersEl.addEventListener("click", () => {
+            showAllChapters = !showAllChapters;
             renderChapterList();
         });
     }
