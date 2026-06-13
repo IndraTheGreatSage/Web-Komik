@@ -531,6 +531,7 @@ main {
     background: rgba(16, 19, 19, 0.96);
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(12px);
+    transition: opacity 0.3s ease, pointer-events 0.3s ease;
 }
 
 .toolbar-link {
@@ -620,6 +621,84 @@ main {
     min-height: 360px;
     object-fit: cover;
     border: 0;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+.reader-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 19;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--ember);
+    transition: width 0.1s ease;
+}
+
+.progress-text {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #f7f1e8;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.reader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.settings-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    min-width: 320px;
+    max-width: 400px;
+    background: var(--paper-strong);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 24px;
+}
+
+.settings-content h3 {
+    margin: 0 0 20px;
+    font-size: 1.5rem;
+    color: var(--ink);
+}
+
+.setting-item {
+    margin-bottom: 16px;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.setting-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 
 @media (max-width: 820px) {

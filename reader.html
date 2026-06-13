@@ -8,18 +8,49 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="reader-body">
-    <header class="reader-toolbar">
+    <header class="reader-toolbar" id="readerToolbar">
         <a class="toolbar-link" id="backToDetail" href="index.html">Kembali</a>
         <div class="reader-title">
             <strong id="readerComicTitle">Memuat komik...</strong>
             <span id="readerChapterTitle">Memuat chapter...</span>
         </div>
         <div class="reader-controls">
-            <button type="button" id="prevChapter">Sebelum</button>
             <select id="chapterSelect" aria-label="Pilih chapter"></select>
-            <button type="button" id="nextChapter">Lanjut</button>
+            <button type="button" id="settingsBtn" aria-label="Pengaturan">⚙️</button>
         </div>
     </header>
+
+    <div class="reader-progress" id="readerProgress">
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-text" id="progressText">0%</div>
+    </div>
+
+    <div class="reader-overlay" id="readerOverlay"></div>
+
+    <div class="settings-panel" id="settingsPanel" hidden>
+        <div class="settings-content">
+            <h3>Pengaturan Baca</h3>
+            <div class="setting-item">
+                <label for="autoContinue">
+                    <input type="checkbox" id="autoContinue" checked>
+                    Lanjut otomatis ke chapter berikutnya
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="tapZone">
+                    <input type="checkbox" id="tapZone" checked>
+                    Zone tap (kiri: sebelumnya, kanan: selanjutnya)
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="doubleTapZoom">
+                    <input type="checkbox" id="doubleTapZoom" checked>
+                    Zoom dengan double tap
+                </label>
+            </div>
+            <button type="button" id="closeSettings" class="primary-action">Tutup</button>
+        </div>
+    </div>
 
     <main class="reader-main">
         <div class="reader-pages" id="readerPages" aria-live="polite"></div>
