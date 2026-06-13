@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>Manhua, manhwa, manga</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <a href="index.html">Beranda</a>
+            <a href="register.html" class="primary-action">Daftar</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="auth-section">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1>Login</h1>
+                    <p>Masuk untuk melanjutkan membaca komik favoritmu</p>
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            placeholder="contoh@email.com"
+                            autocomplete="email"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            placeholder="Masukkan password"
+                            autocomplete="current-password"
+                        >
+                    </div>
+                    
+                    <div id="loginError" class="error-message" hidden></div>
+                    
+                    <button type="submit" class="primary-action full-width">Login</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Belum punya akun? <a href="register.html">Daftar sekarang</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        // Check if already logged in
+        if (auth.isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+
+        // Handle login form submission
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            // Clear previous error
+            loginError.hidden = true;
+            loginError.textContent = '';
+            
+            // Attempt login
+            const result = auth.login(email, password);
+            
+            if (result.success) {
+                // Redirect to home page
+                window.location.href = 'index.html';
+            } else {
+                // Show error
+                loginError.textContent = result.error;
+                loginError.hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>

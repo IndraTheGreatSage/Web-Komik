@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - KomikLoka</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="KomikLoka beranda">
+            <span class="brand-mark">KL</span>
+            <span>
+                <strong>KomikLoka</strong>
+                <small>Manhua, manhwa, manga</small>
+            </span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <a href="index.html">Beranda</a>
+            <a href="login.html" class="ghost-action">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="auth-section">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1>Daftar</h1>
+                    <p>Buat akun untuk mulai membaca komik favoritmu</p>
+                </div>
+                
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            required 
+                            placeholder="Masukkan username"
+                            autocomplete="username"
+                            minlength="3"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required 
+                            placeholder="contoh@email.com"
+                            autocomplete="email"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            placeholder="Minimal 6 karakter"
+                            autocomplete="new-password"
+                            minlength="6"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Konfirmasi Password</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            required 
+                            placeholder="Ulangi password"
+                            autocomplete="new-password"
+                        >
+                    </div>
+                    
+                    <div id="registerError" class="error-message" hidden></div>
+                    
+                    <button type="submit" class="primary-action full-width">Daftar</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Sudah punya akun? <a href="login.html">Login sekarang</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        // Check if already logged in
+        if (auth.isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+
+        // Handle register form submission
+        const registerForm = document.getElementById('registerForm');
+        const registerError = document.getElementById('registerError');
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Clear previous error
+            registerError.hidden = true;
+            registerError.textContent = '';
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                registerError.textContent = 'Password tidak cocok';
+                registerError.hidden = false;
+                return;
+            }
+            
+            // Attempt registration
+            const result = auth.register(username, email, password);
+            
+            if (result.success) {
+                // Auto-login after registration
+                auth.login(email, password);
+                // Redirect to home page
+                window.location.href = 'index.html';
+            } else {
+                // Show error
+                registerError.textContent = result.error;
+                registerError.hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>
