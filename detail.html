@@ -67,25 +67,42 @@
                     <p class="eyebrow">Diskusi</p>
                     <h2 id="judul-komentar">Komentar</h2>
                 </div>
-                <p id="commentCount" class="result-count">0 komentar</p>
-            </div>
-
-            <div class="auth-panel">
-                <p id="authStatus">Belum login</p>
-                <div id="loginPrompt" style="display: none; text-align: center; margin: 16px 0;">
-                    <p style="color: var(--muted); margin-bottom: 12px;">Silakan login untuk menulis komentar</p>
-                    <a href="login.html" class="primary-action" style="display: inline-block; padding: 10px 20px;">Login</a>
+                <div class="comment-stats">
+                    <p id="commentCount" class="result-count">0 komentar</p>
+                    <button type="button" id="sortComments" class="ghost-action" style="font-size: 0.85rem; padding: 6px 12px;">Terbaru</button>
                 </div>
-                <button type="button" id="logoutButton" class="ghost-button" hidden>Logout</button>
             </div>
 
-            <form id="commentForm" class="comment-form">
-                <label for="commentText">Tulis komentar</label>
-                <textarea id="commentText" rows="4" maxlength="600" placeholder="Bagikan pendapat kamu..." required></textarea>
-                <button type="submit">Kirim komentar</button>
-            </form>
+            <div class="comment-input-area" id="commentInputArea">
+                <div class="user-avatar" id="currentUserAvatar">
+                    <span>?</span>
+                </div>
+                <div class="comment-input-wrapper">
+                    <div id="loginPrompt" class="login-prompt">
+                        <p>Login untuk ikut berdiskusi</p>
+                        <a href="login.html" class="primary-action">Login</a>
+                    </div>
+                    <form id="commentForm" class="comment-form" hidden>
+                        <textarea 
+                            id="commentText" 
+                            rows="3" 
+                            maxlength="1000" 
+                            placeholder="Apa pendapatmu tentang komik ini?" 
+                            required
+                        ></textarea>
+                        <div class="comment-form-actions">
+                            <span class="char-count" id="charCount">0/1000</span>
+                            <button type="submit" class="primary-action">Kirim</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-            <div class="comments-list" id="commentsList"></div>
+            <div class="comments-list" id="commentsList">
+                <div class="comments-loading" id="commentsLoading" hidden>
+                    <p>Memuat komentar...</p>
+                </div>
+            </div>
         </section>
     </main>
 

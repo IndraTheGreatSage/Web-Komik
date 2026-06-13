@@ -77,14 +77,6 @@
         return preference.direction === "asc" ? "Chapter kecil dulu" : "Chapter besar dulu";
     };
 
-    const getCommentsKey = () => `komikloka:comments:${comic.id}`;
-
-    const loadComments = () => safeJsonParse(localStorage.getItem(getCommentsKey()), []);
-
-    const saveComments = (comments) => {
-        localStorage.setItem(getCommentsKey(), JSON.stringify(comments));
-    };
-
     const showMissing = () => {
         const root = document.getElementById("detailRoot");
         if (root) {
@@ -229,102 +221,275 @@
 
     renderChapterList();
 
-    const authStatusEl = document.getElementById("authStatus");
-    const loginPromptEl = document.getElementById("loginPrompt");
-    const logoutButtonEl = document.getElementById("logoutButton");
-    const commentFormEl = document.getElementById("commentForm");
-    const commentTextEl = document.getElementById("commentText");
-    const commentsListEl = document.getElementById("commentsList");
-    const commentCountEl = document.getElementById("commentCount");
+    // New Improved Comment System
+    const getCommentsKey = () => `komikloka:comments:${comic.id}`;
+    const getCommentsSortKey = () => `komikloka:commentsSort:${comic.id}`;
 
-    const renderAuth = () => {
-        const user = auth.getUser();
-        if (authStatusEl) {
-            authStatusEl.textContent = user ? `Login sebagai ${user.username}` : "Belum login";
-        }
-        if (loginPromptEl) {
-            loginPromptEl.style.display = user ? "none" : "block";
-        }
-        if (logoutButtonEl) logoutButtonEl.hidden = !user;
-        if (commentTextEl) {
-            commentTextEl.disabled = !user;
-            commentTextEl.placeholder = user ? "Bagikan pendapat kamu..." : "Login dulu untuk menulis komentar";
-        }
-        if (commentFormEl) {
-            const submitButton = commentFormEl.querySelector("button");
-            if (submitButton) submitButton.disabled = !user;
+    const loadComments = () => {
+        try {
+            const data = localStorage.getItem(getCommentsKey());
+            return data ? JSON.parse(data) : [];
+        } catch {
+            return [];
         }
     };
 
-    const formatCommentDate = (value) => {
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "";
+    const saveComments = (comments) => {
+        localStorage.setItem(getCommentsKey(), JSON.stringify(comments));
+    };
 
-        return date.toLocaleString("id-ID", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
+    const getCommentSort = () => {
+        return localStorage.getItem(getCommentsSortKey()) || 'newest';
+    };
+
+    const setCommentSort = (sort) => {
+        localStorage.setItem(getCommentsSortKey(), sort);
+    };
+
+    const getUserAvatar = (username) => {
+        const colors = ['#c8462e', '#197d75', '#d89a21', '#315c3b', '#8e2e1d'];
+        const index = username.charCodeAt(0) % colors.length;
+        return colors[index];
+    };
+
+    const formatRelativeTime = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Baru saja';
+        if (diffMins < 60) return `${diffMins} menit lalu`;
+        if (diffHours < 24) return `${diffHours} jam lalu`;
+        if (diffDays < 7) return `${diffDays} hari lalu`;
+        
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
         });
+    };
+
+    const commentInputArea = document.getElementById('commentInputArea');
+    const currentUserAvatar = document.getElementById('currentUserAvatar');
+    const loginPrompt = document.getElementById('loginPrompt');
+    const commentForm = document.getElementById('commentForm');
+    const commentText = document.getElementById('commentText');
+    const charCount = document.getElementById('charCount');
+    const commentsList = document.getElementById('commentsList');
+    const commentCount = document.getElementById('commentCount');
+    const sortCommentsBtn = document.getElementById('sortComments');
+    const commentsLoading = document.getElementById('commentsLoading');
+
+    let currentSort = getCommentSort();
+
+    const renderAuth = () => {
+        const user = auth.getCurrentUser();
+        
+        if (user) {
+            if (currentUserAvatar) {
+                currentUserAvatar.style.background = getUserAvatar(user.username);
+                currentUserAvatar.querySelector('span').textContent = user.username.charAt(0).toUpperCase();
+            }
+            if (loginPrompt) loginPrompt.hidden = true;
+            if (commentForm) commentForm.hidden = false;
+        } else {
+            if (currentUserAvatar) {
+                currentUserAvatar.style.background = 'var(--line)';
+                currentUserAvatar.querySelector('span').textContent = '?';
+            }
+            if (loginPrompt) loginPrompt.hidden = false;
+            if (commentForm) commentForm.hidden = true;
+        }
     };
 
     const renderComments = () => {
-        const comments = loadComments()
-            .filter((comment) => comment && comment.text && comment.author)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        if (!commentsList) return;
 
-        if (commentCountEl) {
-            commentCountEl.textContent = `${comments.length} komentar`;
+        const comments = loadComments().filter(c => c && c.text && c.author);
+        
+        // Sort comments
+        if (currentSort === 'newest') {
+            comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        } else if (currentSort === 'oldest') {
+            comments.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        } else if (currentSort === 'popular') {
+            comments.sort((a, b) => (b.likes || 0) - (a.likes || 0));
         }
 
-        if (!commentsListEl) return;
+        if (commentCount) {
+            commentCount.textContent = `${comments.length} komentar`;
+        }
 
         if (comments.length === 0) {
-            commentsListEl.innerHTML = `<p class="empty-comments">Belum ada komentar.</p>`;
+            commentsList.innerHTML = `
+                <div class="empty-comments">
+                    <p>Belum ada komentar. Jadilah yang pertama berkomentar!</p>
+                </div>
+            `;
             return;
         }
 
-        commentsListEl.innerHTML = comments.map((comment) => {
+        commentsList.innerHTML = comments.map(comment => {
+            const currentUser = auth.getCurrentUser();
+            const isOwner = currentUser && currentUser.username === comment.author;
+            const timeAgo = formatRelativeTime(comment.createdAt);
+            
             return `
-                <article class="comment-card">
-                    <div>
-                        <strong>${escapeHtml(comment.author)}</strong>
-                        <time datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(formatCommentDate(comment.createdAt))}</time>
+                <article class="comment-card" data-comment-id="${escapeHtml(comment.id)}">
+                    <div class="comment-avatar" style="background: ${getUserAvatar(comment.author)}">
+                        <span>${escapeHtml(comment.author.charAt(0).toUpperCase())}</span>
                     </div>
-                    <p>${escapeHtml(comment.text)}</p>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <strong>${escapeHtml(comment.author)}</strong>
+                                ${isOwner ? '<span class="comment-badge">Penulis</span>' : ''}
+                            </div>
+                            <time class="comment-time" datetime="${escapeHtml(comment.createdAt)}">${escapeHtml(timeAgo)}</time>
+                        </div>
+                        <p class="comment-text">${escapeHtml(comment.text)}</p>
+                        <div class="comment-actions">
+                            <button class="comment-like-btn" data-comment-id="${escapeHtml(comment.id)}">
+                                <span>👍</span>
+                                <span class="like-count">${comment.likes || 0}</span>
+                            </button>
+                            ${isOwner ? `
+                                <button class="comment-delete-btn" data-comment-id="${escapeHtml(comment.id)}">
+                                    <span>🗑️</span>
+                                    <span>Hapus</span>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
                 </article>
             `;
-        }).join("");
+        }).join('');
+
+        // Add event listeners for like and delete buttons
+        commentsList.querySelectorAll('.comment-like-btn').forEach(btn => {
+            btn.addEventListener('click', handleLikeComment);
+        });
+
+        commentsList.querySelectorAll('.comment-delete-btn').forEach(btn => {
+            btn.addEventListener('click', handleDeleteComment);
+        });
     };
 
-    if (logoutButtonEl) {
-        logoutButtonEl.addEventListener("click", () => {
-            auth.logout();
+    const handleLikeComment = (e) => {
+        const commentId = e.currentTarget.dataset.commentId;
+        const user = auth.getCurrentUser();
+        if (!user) return;
+
+        const comments = loadComments();
+        const comment = comments.find(c => c.id === commentId);
+        
+        if (comment) {
+            if (!comment.likedBy) comment.likedBy = [];
+            const userIndex = comment.likedBy.indexOf(user.username);
+            
+            if (userIndex === -1) {
+                comment.likedBy.push(user.username);
+                comment.likes = (comment.likes || 0) + 1;
+            } else {
+                comment.likedBy.splice(userIndex, 1);
+                comment.likes = Math.max(0, (comment.likes || 0) - 1);
+            }
+            
+            saveComments(comments);
+            renderComments();
+        }
+    };
+
+    const handleDeleteComment = (e) => {
+        const commentId = e.currentTarget.dataset.commentId;
+        const user = auth.getCurrentUser();
+        if (!user) return;
+
+        const comments = loadComments();
+        const commentIndex = comments.findIndex(c => c.id === commentId);
+        
+        if (commentIndex !== -1) {
+            const comment = comments[commentIndex];
+            if (comment.author === user.username) {
+                if (confirm('Hapus komentar ini?')) {
+                    comments.splice(commentIndex, 1);
+                    saveComments(comments);
+                    renderComments();
+                }
+            }
+        }
+    };
+
+    const handleSortComments = () => {
+        const sorts = ['newest', 'oldest', 'popular'];
+        const currentIndex = sorts.indexOf(currentSort);
+        currentSort = sorts[(currentIndex + 1) % sorts.length];
+        
+        const labels = {
+            newest: 'Terbaru',
+            oldest: 'Terlama',
+            popular: 'Terpopuler'
+        };
+        
+        if (sortCommentsBtn) {
+            sortCommentsBtn.textContent = labels[currentSort];
+        }
+        
+        setCommentSort(currentSort);
+        renderComments();
+    };
+
+    // Character count
+    if (commentText && charCount) {
+        commentText.addEventListener('input', () => {
+            const length = commentText.value.length;
+            charCount.textContent = `${length}/1000`;
+            charCount.style.color = length > 900 ? 'var(--ember)' : 'var(--muted)';
         });
     }
 
-    if (commentFormEl) {
-        commentFormEl.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const user = auth.getUser();
-            const text = String(commentTextEl?.value || "").trim();
+    // Comment form submission
+    if (commentForm) {
+        commentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = auth.getCurrentUser();
+            const text = commentText.value.trim();
+            
             if (!user || !text) return;
 
             const comments = loadComments();
             comments.push({
                 id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
                 author: user.username,
-                text: text.slice(0, 600),
+                text: text.slice(0, 1000),
                 createdAt: new Date().toISOString(),
+                likes: 0,
+                likedBy: []
             });
 
             saveComments(comments);
-            commentFormEl.reset();
+            commentForm.reset();
+            charCount.textContent = '0/1000';
             renderComments();
         });
     }
 
+    // Sort button
+    if (sortCommentsBtn) {
+        sortCommentsBtn.addEventListener('click', handleSortComments);
+    }
+
+    // Initialize
     renderAuth();
     renderComments();
+    
+    // Listen for auth changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'komikloka_user') {
+            renderAuth();
+        }
+    });
 })();

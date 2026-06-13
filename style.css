@@ -701,6 +701,231 @@ main {
     cursor: pointer;
 }
 
+/* Comment System Styles */
+.comment-section {
+    padding: 34px 0 0;
+}
+
+.comment-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.comment-input-area {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(255, 248, 236, 0.5);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--paper-strong);
+    font-weight: 800;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.comment-input-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.login-prompt {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+}
+
+.login-prompt p {
+    margin: 0 0 12px;
+    font-weight: 700;
+}
+
+.comment-form {
+    display: grid;
+    gap: 12px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper-strong);
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.comment-form textarea:focus {
+    border-color: var(--ink);
+}
+
+.comment-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-count {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.comments-list {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.empty-comments {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.comments-loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.comment-card {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--paper-strong);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    transition: border-color 0.2s;
+}
+
+.comment-card:hover {
+    border-color: var(--ink);
+}
+
+.comment-avatar {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--paper-strong);
+    font-weight: 800;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.comment-author {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.comment-author strong {
+    font-size: 0.95rem;
+}
+
+.comment-badge {
+    padding: 2px 8px;
+    background: var(--ember);
+    color: var(--paper-strong);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.comment-time {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.comment-text {
+    margin: 0 0 12px;
+    color: var(--ink);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-weight: 600;
+    word-wrap: break-word;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-like-btn,
+.comment-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: rgba(255, 248, 236, 0.5);
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.comment-like-btn:hover,
+.comment-delete-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: rgba(255, 248, 236, 0.8);
+}
+
+.comment-like-btn.liked {
+    background: var(--ember);
+    color: var(--paper-strong);
+    border-color: var(--ember);
+}
+
+.comment-delete-btn {
+    color: var(--ember-dark);
+}
+
+.comment-delete-btn:hover {
+    background: rgba(200, 70, 46, 0.1);
+    border-color: var(--ember);
+}
+
+.like-count {
+    font-weight: 900;
+}
+
 @media (max-width: 820px) {
     .site-header {
         align-items: flex-start;
