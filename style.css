@@ -252,6 +252,55 @@ main {
     background: var(--paper-strong);
 }
 
+.genre-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.genre-tabs::-webkit-scrollbar {
+    width: 6px;
+}
+
+.genre-tabs::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.genre-tabs::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.genre-tabs::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.genre-tabs button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--paper-strong);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+
+.genre-tabs button.active {
+    color: var(--ink);
+    background: var(--gold);
+    border-color: var(--gold);
+}
+
+.genre-tabs button:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
 .spotlight {
     display: grid;
     grid-template-columns: 250px minmax(0, 1fr);

@@ -18,6 +18,7 @@
         comics: [],
         query: "",
         activeType: "Semua",
+        activeGenre: "Semua",
     };
 
     const escapeHtml = (value) => {
@@ -46,22 +47,17 @@
     };
 
     const getSearchText = (comic) => {
-        return [
-            comic.title,
-            comic.type,
-            comic.status,
-            comic.author,
-            comic.summary,
-            ...(comic.genres || []),
-        ].join(" ").toLowerCase();
+        // Search only by title
+        return comic.title.toLowerCase();
     };
 
     const getFilteredComics = () => {
         const query = state.query.trim().toLowerCase();
         return state.comics.filter((comic) => {
             const matchesType = state.activeType === "Semua" || comic.type === state.activeType;
+            const matchesGenre = state.activeGenre === "Semua" || (comic.genres && comic.genres.includes(state.activeGenre));
             const matchesQuery = !query || getSearchText(comic).includes(query);
-            return matchesType && matchesQuery;
+            return matchesType && matchesGenre && matchesQuery;
         });
     };
 
@@ -77,6 +73,32 @@
         elements.filterTabs.querySelectorAll("button").forEach((button) => {
             button.addEventListener("click", () => {
                 state.activeType = button.dataset.type || "Semua";
+                render();
+            });
+        });
+    };
+
+    const renderGenreFilters = () => {
+        const genreTabsEl = document.getElementById("genreTabs");
+        if (!genreTabsEl) return;
+
+        // Get all unique genres from all comics
+        const allGenres = new Set();
+        state.comics.forEach((comic) => {
+            if (comic.genres) {
+                comic.genres.forEach((genre) => allGenres.add(genre));
+            }
+        });
+
+        const genres = ["Semua", ...Array.from(allGenres).sort()];
+        genreTabsEl.innerHTML = genres.map((genre) => {
+            const active = genre === state.activeGenre ? " active" : "";
+            return `<button type="button" class="${active.trim()}" data-genre="${escapeHtml(genre)}">${escapeHtml(genre)}</button>`;
+        }).join("");
+
+        genreTabsEl.querySelectorAll("button").forEach((button) => {
+            button.addEventListener("click", () => {
+                state.activeGenre = button.dataset.genre || "Semua";
                 render();
             });
         });
@@ -145,6 +167,7 @@
 
     const render = () => {
         renderFilters();
+        renderGenreFilters();
         const comics = getFilteredComics();
         renderSpotlight(comics[0] || state.comics[0]);
         renderGrid(comics);
@@ -183,6 +206,7 @@
         elements.resetSearch.addEventListener("click", () => {
             state.query = "";
             state.activeType = "Semua";
+            state.activeGenre = "Semua";
             if (elements.searchInput) elements.searchInput.value = "";
             render();
         });
