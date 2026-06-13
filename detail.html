@@ -72,10 +72,10 @@
 
             <div class="auth-panel">
                 <p id="authStatus">Belum login</p>
-                <form id="loginForm" class="login-form">
-                    <input id="loginName" type="text" name="name" placeholder="Nama kamu" autocomplete="name" maxlength="28" required>
-                    <button type="submit">Login</button>
-                </form>
+                <div id="loginPrompt" style="display: none; text-align: center; margin: 16px 0;">
+                    <p style="color: var(--muted); margin-bottom: 12px;">Silakan login untuk menulis komentar</p>
+                    <a href="login.html" class="primary-action" style="display: inline-block; padding: 10px 20px;">Login</a>
+                </div>
                 <button type="button" id="logoutButton" class="ghost-button" hidden>Logout</button>
             </div>
 
@@ -91,6 +91,7 @@
 
     <script src="config.js"></script>
     <script src="data.js"></script>
+    <script src="auth.js"></script>
     <script src="detail.js"></script>
 </body>
 </html>
