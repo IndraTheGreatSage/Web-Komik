@@ -19,6 +19,14 @@
         <nav class="top-nav" aria-label="Navigasi utama">
             <a href="#katalog">Katalog</a>
             <a href="#rilis">Rilis</a>
+            <div id="authNav" style="display: flex; gap: 8px; align-items: center;">
+                <a href="login.html" class="ghost-action">Login</a>
+                <a href="register.html" class="primary-action">Daftar</a>
+            </div>
+            <div id="userNav" style="display: none; gap: 8px; align-items: center;">
+                <a href="user-profile.html" class="ghost-action" id="profileLink">Profil</a>
+                <button id="logoutBtnHeader" class="ghost-action" style="background: none; border: none; cursor: pointer; color: inherit; font-weight: 800; padding: 0 14px;">Logout</button>
+            </div>
         </nav>
     </header>
 
@@ -71,6 +79,30 @@
 
     <script src="config.js"></script>
     <script src="data.js"></script>
+    <script src="auth.js"></script>
     <script src="app.js"></script>
+    <script>
+        // Update nav berdasarkan auth status
+        function updateAuthNav() {
+            const authNav = document.getElementById('authNav');
+            const userNav = document.getElementById('userNav');
+            
+            if (auth.isAuthenticated()) {
+                authNav.style.display = 'none';
+                userNav.style.display = 'flex';
+            } else {
+                authNav.style.display = 'flex';
+                userNav.style.display = 'none';
+            }
+        }
+
+        // Handle logout dari header
+        document.getElementById('logoutBtnHeader').addEventListener('click', () => {
+            auth.logout();
+        });
+
+        // Update nav saat page load
+        updateAuthNav();
+    </script>
 </body>
 </html>
