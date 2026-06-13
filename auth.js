@@ -184,26 +184,32 @@ const auth = {
     // Register new user
     register(username, email, password) {
         try {
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return { success: false, error: 'Format email tidak valid' };
+            }
+
             // Get existing users
             const users = this.getUsers();
-            
+
             // Check if email already exists
             const emailExists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
             if (emailExists) {
                 return { success: false, error: 'Email sudah terdaftar' };
             }
-            
+
             // Check if username already exists
             const usernameExists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
             if (usernameExists) {
                 return { success: false, error: 'Username sudah digunakan' };
             }
-            
+
             // Validate password
             if (password.length < 6) {
                 return { success: false, error: 'Password minimal 6 karakter' };
             }
-            
+
             // Create new user
             const newUser = {
                 id: Date.now().toString(),
@@ -212,11 +218,11 @@ const auth = {
                 password: password,
                 createdAt: new Date().toISOString()
             };
-            
+
             // Save user
             users.push(newUser);
             localStorage.setItem('komikloka_users', JSON.stringify(users));
-            
+
             return { success: true, user: newUser };
         } catch (error) {
             console.error('Register error:', error);
