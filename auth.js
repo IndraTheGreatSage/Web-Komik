@@ -135,7 +135,7 @@ const auth = {
                         window.dispatchEvent(new CustomEvent('authChange', { detail: { loggedIn: true } }));
                     }
 
-                    return { success: true, user: sessionUser };
+                    return { success: true, user: sessionUser, message: 'Selamat datang, Owner! 👑' };
                 }
             }
 
