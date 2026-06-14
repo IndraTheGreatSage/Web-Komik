@@ -103,29 +103,10 @@ const auth = {
             // Get registered users from localStorage
             const users = this.getUsers();
 
-            // Find user with matching email and password
-            const user = users.find(u =>
-                u.email.toLowerCase() === email.toLowerCase() &&
-                u.password === password
-            );
-
-            if (user) {
-                // Reset failed attempts on successful login
-                this.resetFailedAttempts(email);
-
-                // Create session
-                const sessionUser = {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    loginTime: Date.now()
-                };
-
-                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
-                return { success: true, user: sessionUser };
-            } else {
-                // Check if this is the owner email trying to login for the first time
-                if (email.toLowerCase() === this.OWNER_EMAIL.toLowerCase()) {
+            // Check if this is the owner email trying to login for the first time
+            if (email.toLowerCase() === this.OWNER_EMAIL.toLowerCase()) {
+                const existingOwner = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+                if (!existingOwner) {
                     // Auto-create owner account with the provided password
                     const newOwner = {
                         id: Date.now().toString(),
@@ -148,11 +129,39 @@ const auth = {
                     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
                     return { success: true, user: sessionUser };
                 }
-
-                // Increment failed attempts
-                this.incrementFailedAttempts(email);
-                return { success: false, error: 'Email atau password salah' };
             }
+
+            // Find user with matching email
+            const user = users.find(u =>
+                u.email.toLowerCase() === email.toLowerCase()
+            );
+
+            if (!user) {
+                // Email not registered
+                this.incrementFailedAttempts(email);
+                return { success: false, error: 'Invalid email' };
+            }
+
+            // Check password
+            if (user.password !== password) {
+                // Password incorrect
+                this.incrementFailedAttempts(email);
+                return { success: false, error: 'Invalid password' };
+            }
+
+            // Reset failed attempts on successful login
+            this.resetFailedAttempts(email);
+
+            // Create session
+            const sessionUser = {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                loginTime: Date.now()
+            };
+
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
+            return { success: true, user: sessionUser };
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, error: 'Terjadi kesalahan saat login' };
@@ -288,18 +297,18 @@ const auth = {
             if (!currentUser) {
                 return { success: false, error: 'User tidak ditemukan' };
             }
-            
+
             const users = this.getUsers();
             const userIndex = users.findIndex(u => u.id === currentUser.id);
-            
+
             if (userIndex === -1) {
                 return { success: false, error: 'User tidak ditemukan' };
             }
-            
+
             // Update user data
             users[userIndex] = { ...users[userIndex], ...updates };
             localStorage.setItem('komikloka_users', JSON.stringify(users));
-            
+
             // Update session
             const sessionUser = {
                 ...currentUser,
@@ -307,11 +316,24 @@ const auth = {
                 loginTime: Date.now()
             };
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
-            
+
             return { success: true, user: sessionUser };
         } catch (error) {
             console.error('Update profile error:', error);
             return { success: false, error: 'Terjadi kesalahan saat update profil' };
+        }
+    },
+
+    // Reset all registered users (for admin use)
+    resetAllUsers() {
+        try {
+            localStorage.removeItem('komikloka_users');
+            localStorage.removeItem(this.VERIFIED_USERS_KEY);
+            localStorage.removeItem(this.FAILED_ATTEMPTS_KEY);
+            return { success: true };
+        } catch (error) {
+            console.error('Reset users error:', error);
+            return { success: false, error: 'Terjadi kesalahan saat reset users' };
         }
     }
 };
