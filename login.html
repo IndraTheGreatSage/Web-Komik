@@ -60,7 +60,6 @@
                             type="text"
                             id="captchaAnswer"
                             name="captchaAnswer"
-                            required
                             placeholder="Masukkan jawaban"
                             autocomplete="off"
                         >
@@ -105,17 +104,21 @@
 
             const showCaptcha = () => {
                 const captchaContainer = document.getElementById('captchaContainer');
-                if (captchaContainer) {
+                const captchaInput = document.getElementById('captchaAnswer');
+                if (captchaContainer && captchaInput) {
                     captchaContainer.hidden = false;
+                    captchaInput.required = true;
                     generateCaptcha();
                 }
             };
 
             const hideCaptcha = () => {
                 const captchaContainer = document.getElementById('captchaContainer');
-                if (captchaContainer) {
+                const captchaInput = document.getElementById('captchaAnswer');
+                if (captchaContainer && captchaInput) {
                     captchaContainer.hidden = true;
-                    document.getElementById('captchaAnswer').value = '';
+                    captchaInput.required = false;
+                    captchaInput.value = '';
                 }
             };
 
