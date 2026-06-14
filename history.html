@@ -168,7 +168,7 @@
 
                 if (clearHistoryBtn) clearHistoryBtn.hidden = false;
 
-                const comics = (typeof window !== 'undefined' && window.KomikData) ? await window.KomikData.loadLibrary() : [];
+                const comics = window.KomikData ? await window.KomikData.loadLibrary() : [];
                 const historyComics = history.map(h => {
                     const comic = comics.find(c => c.id === h.comicId);
                     return comic ? { comic, lastRead: h.lastRead } : null;
