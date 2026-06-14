@@ -216,7 +216,12 @@
             updateAuthNav();
             renderHistory();
 
-            // Listen for auth changes
+            // Listen for auth changes (custom event + storage event)
+            window.addEventListener('authChange', (e) => {
+                updateAuthNav();
+                renderHistory();
+            });
+
             window.addEventListener('storage', (e) => {
                 if (e.key === 'komikloka_user') {
                     updateAuthNav();

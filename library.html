@@ -176,7 +176,12 @@
             updateAuthNav();
             renderLibrary();
 
-            // Listen for auth changes
+            // Listen for auth changes (custom event + storage event)
+            window.addEventListener('authChange', (e) => {
+                updateAuthNav();
+                renderLibrary();
+            });
+
             window.addEventListener('storage', (e) => {
                 if (e.key === 'komikloka_user') {
                     updateAuthNav();

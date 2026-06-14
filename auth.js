@@ -127,6 +127,10 @@ const auth = {
                     };
 
                     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
+
+                    // Dispatch custom event for auth change
+                    window.dispatchEvent(new CustomEvent('authChange', { detail: { loggedIn: true } }));
+
                     return { success: true, user: sessionUser };
                 }
             }
@@ -161,6 +165,10 @@ const auth = {
             };
 
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
+
+            // Dispatch custom event for auth change
+            window.dispatchEvent(new CustomEvent('authChange', { detail: { loggedIn: true } }));
+
             return { success: true, user: sessionUser };
         } catch (error) {
             console.error('Login error:', error);
@@ -279,10 +287,10 @@ const auth = {
     logout() {
         try {
             localStorage.removeItem(this.STORAGE_KEY);
-            // Redirect to home page
-            if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
-                window.location.href = 'index.html';
-            }
+            // Dispatch custom event for auth change
+            window.dispatchEvent(new CustomEvent('authChange', { detail: { loggedIn: false } }));
+            // Reload current page to update UI
+            window.location.reload();
             return { success: true };
         } catch (error) {
             console.error('Logout error:', error);
