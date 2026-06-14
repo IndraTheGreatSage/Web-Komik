@@ -123,7 +123,7 @@
             const emptyState = document.getElementById("emptyState");
             const resultCount = document.getElementById("resultCount");
 
-            const renderLibrary = () => {
+            const renderLibrary = async () => {
                 const user = auth.getCurrentUser();
                 if (!user) {
                     if (comicGrid) comicGrid.innerHTML = "";

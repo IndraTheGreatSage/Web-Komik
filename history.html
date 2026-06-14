@@ -144,7 +144,7 @@
             const emptyState = document.getElementById("emptyState");
             const clearHistoryBtn = document.getElementById("clearHistory");
 
-            const renderHistory = () => {
+            const renderHistory = async () => {
                 const user = auth.getCurrentUser();
                 if (!user) {
                     if (comicGrid) comicGrid.innerHTML = "";
