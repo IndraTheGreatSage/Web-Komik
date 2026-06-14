@@ -118,7 +118,7 @@
         : null;
         
     const readUrl = firstChapter
-        ? `reader?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(firstChapter.id)}`
+        ? `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(firstChapter.id)}`
         : "#";
 
     document.title = `${comic.title} - KomikLoka`;
@@ -202,7 +202,7 @@
             : sortedChapters.slice(0, 3);
 
         chapterListEl.innerHTML = displayChapters.map((chapter) => {
-            const chapterUrl = `reader?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
+            const chapterUrl = `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
             const date = formatDate(chapter.updatedAt);
 
             return `

@@ -272,7 +272,7 @@ const auth = {
             localStorage.removeItem(this.STORAGE_KEY);
             // Redirect to home page
             if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
-                window.location.href = './';
+                window.location.href = 'index.html';
             }
             return { success: true };
         } catch (error) {

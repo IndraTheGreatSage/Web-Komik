@@ -96,7 +96,7 @@
     currentIndex = getChapterIndex(chapterId);
 
     const getReadUrl = (chapter) => {
-        return `reader?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
+        return `reader.html?id=${encodeURIComponent(comic.id)}&chapter=${encodeURIComponent(chapter.id)}`;
     };
 
     // Toolbar visibility
@@ -272,7 +272,7 @@
         if (comicTitle) comicTitle.textContent = comic.title;
         if (chapterTitle) chapterTitle.textContent = chapter.title;
         if (chapterSelect) chapterSelect.value = chapter.id;
-        if (backToDetail) backToDetail.href = `detail?id=${encodeURIComponent(comic.id)}`;
+        if (backToDetail) backToDetail.href = `detail.html?id=${encodeURIComponent(comic.id)}`;
 
         localStorage.setItem(`komikloka:last:${comic.id}`, chapter.id);
         window.history.replaceState({}, "", getReadUrl(chapter));
