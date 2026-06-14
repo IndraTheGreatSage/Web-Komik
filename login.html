@@ -80,74 +80,92 @@
 
     <script src="auth.js"></script>
     <script>
-        // Check if already logged in
-        if (auth.isAuthenticated()) {
-            window.location.href = './';
-        }
-
-        // CAPTCHA logic
-        let captchaAnswer = 0;
-
-        const generateCaptcha = () => {
-            const num1 = Math.floor(Math.random() * 10) + 1;
-            const num2 = Math.floor(Math.random() * 10) + 1;
-            captchaAnswer = num1 + num2;
-            document.getElementById('captchaQuestion').textContent = `${num1} + ${num2}`;
-        };
-
-        const showCaptcha = () => {
-            const captchaContainer = document.getElementById('captchaContainer');
-            if (captchaContainer) {
-                captchaContainer.hidden = false;
-                generateCaptcha();
+        // Wait for auth to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if auth is loaded
+            if (typeof auth === 'undefined') {
+                console.error('Auth object not loaded');
+                return;
             }
-        };
 
-        const hideCaptcha = () => {
-            const captchaContainer = document.getElementById('captchaContainer');
-            if (captchaContainer) {
-                captchaContainer.hidden = true;
-                document.getElementById('captchaAnswer').value = '';
-            }
-        };
-
-        // Handle login form submission
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const captchaInput = document.getElementById('captchaAnswer').value;
-
-            // Clear previous error
-            loginError.hidden = true;
-            loginError.textContent = '';
-
-            // Attempt login
-            const result = auth.login(email, password, captchaInput);
-
-            if (result.success) {
-                // Redirect to home page
+            // Check if already logged in
+            if (auth.isAuthenticated()) {
                 window.location.href = './';
-            } else if (result.error === 'CAPTCHA_REQUIRED') {
-                // Show CAPTCHA
-                showCaptcha();
-                loginError.textContent = 'Silakan selesaikan verifikasi untuk melanjutkan';
-                loginError.hidden = false;
-            } else {
-                // Show error
-                loginError.textContent = result.error;
-                loginError.hidden = false;
-
-                // Check if CAPTCHA should be shown
-                const failedAttempts = auth.getFailedAttempts(email);
-                if (failedAttempts >= 3) {
-                    showCaptcha();
-                }
             }
+
+            // CAPTCHA logic
+            let captchaAnswer = 0;
+
+            const generateCaptcha = () => {
+                const num1 = Math.floor(Math.random() * 10) + 1;
+                const num2 = Math.floor(Math.random() * 10) + 1;
+                captchaAnswer = num1 + num2;
+                document.getElementById('captchaQuestion').textContent = `${num1} + ${num2}`;
+            };
+
+            const showCaptcha = () => {
+                const captchaContainer = document.getElementById('captchaContainer');
+                if (captchaContainer) {
+                    captchaContainer.hidden = false;
+                    generateCaptcha();
+                }
+            };
+
+            const hideCaptcha = () => {
+                const captchaContainer = document.getElementById('captchaContainer');
+                if (captchaContainer) {
+                    captchaContainer.hidden = true;
+                    document.getElementById('captchaAnswer').value = '';
+                }
+            };
+
+            // Handle login form submission
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+
+            if (!loginForm) {
+                console.error('Login form not found');
+                return;
+            }
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const captchaInput = document.getElementById('captchaAnswer').value;
+
+                console.log('Login attempt:', email);
+
+                // Clear previous error
+                loginError.hidden = true;
+                loginError.textContent = '';
+
+                // Attempt login
+                const result = auth.login(email, password, captchaInput);
+
+                console.log('Login result:', result);
+
+                if (result.success) {
+                    // Redirect to home page
+                    window.location.href = './';
+                } else if (result.error === 'CAPTCHA_REQUIRED') {
+                    // Show CAPTCHA
+                    showCaptcha();
+                    loginError.textContent = 'Silakan selesaikan verifikasi untuk melanjutkan';
+                    loginError.hidden = false;
+                } else {
+                    // Show error
+                    loginError.textContent = result.error;
+                    loginError.hidden = false;
+
+                    // Check if CAPTCHA should be shown
+                    const failedAttempts = auth.getFailedAttempts(email);
+                    if (failedAttempts >= 3) {
+                        showCaptcha();
+                    }
+                }
+            });
         });
     </script>
 </body>
