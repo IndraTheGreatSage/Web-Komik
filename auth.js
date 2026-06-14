@@ -3,6 +3,7 @@ const auth = {
     // Storage keys
     STORAGE_KEY: 'komikloka_user',
     OWNER_EMAIL: 'owner@komikloka.com',
+    KACUNG_EMAIL: 'kacung@komikloka.com',
     VERIFIED_USERS_KEY: 'komikloka_verified_users',
     FAILED_ATTEMPTS_KEY: 'komikloka_failed_attempts',
 
@@ -25,6 +26,7 @@ const auth = {
             if (user) {
                 // Add role information
                 user.isOwner = user.email === this.OWNER_EMAIL;
+                user.isKacung = user.email === this.KACUNG_EMAIL;
                 user.isVerified = this.isVerified(user.email);
             }
             return user;
@@ -134,6 +136,40 @@ const auth = {
                     }
 
                     return { success: true, user: sessionUser };
+                }
+            }
+
+            // Check if this is the kacung email trying to login for the first time
+            if (email.toLowerCase() === this.KACUNG_EMAIL.toLowerCase()) {
+                const existingKacung = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+                if (!existingKacung) {
+                    // Auto-create kacung account with the provided password
+                    const newKacung = {
+                        id: Date.now().toString(),
+                        username: 'Kacung',
+                        email: this.KACUNG_EMAIL,
+                        password: password,
+                        createdAt: new Date().toISOString()
+                    };
+                    users.push(newKacung);
+                    localStorage.setItem('komikloka_users', JSON.stringify(users));
+
+                    // Create session
+                    const sessionUser = {
+                        id: newKacung.id,
+                        username: newKacung.username,
+                        email: newKacung.email,
+                        loginTime: Date.now()
+                    };
+
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(sessionUser));
+
+                    // Dispatch custom event for auth change
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('authChange', { detail: { loggedIn: true } }));
+                    }
+
+                    return { success: true, user: sessionUser, message: 'Selamat datang, Kacung! 🎉' };
                 }
             }
 

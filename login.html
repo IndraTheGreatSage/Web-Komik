@@ -150,8 +150,19 @@
                 console.log('Login result:', result);
 
                 if (result.success) {
-                    // Redirect to home page
-                    window.location.href = './';
+                    // Show welcome message if available
+                    if (result.message) {
+                        loginError.textContent = result.message;
+                        loginError.hidden = false;
+                        // Change error message style to success
+                        loginError.style.color = 'var(--leaf)';
+                        setTimeout(() => {
+                            window.location.href = './';
+                        }, 2000);
+                    } else {
+                        // Redirect to home page
+                        window.location.href = './';
+                    }
                 } else if (result.error === 'CAPTCHA_REQUIRED') {
                     // Show CAPTCHA
                     showCaptcha();
