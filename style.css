@@ -1460,6 +1460,69 @@ body.dark-mode .google-signin-btn:hover {
     background: #3d3d3d;
 }
 
+/* Catalog Actions */
+.catalog-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tool-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.tool-control select {
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.tool-control select:hover {
+    border-color: var(--gold);
+}
+
+body.dark-mode .tool-control select {
+    background: #1a1a1a;
+    border-color: #404040;
+    color: #f5f5f5;
+}
+
+/* Kacung Badge */
+.kacung-badge {
+    background: var(--sky);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Owner Settings Section */
+.owner-only {
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+}
+
+.owner-only h2 {
+    color: var(--gold);
+    margin-bottom: 16px;
+}
+
+body.dark-mode .owner-only {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.08));
+    border-color: var(--gold);
+}
+
 @media (max-width: 820px) {
     .site-header {
         align-items: flex-start;

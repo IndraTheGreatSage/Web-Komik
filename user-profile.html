@@ -51,7 +51,7 @@
 
                 <div class="profile-settings">
                     <h2>Pengaturan Profil</h2>
-                    
+
                     <div class="form-group">
                         <label for="editUsername">Username</label>
                         <input type="text" id="editUsername" placeholder="Username baru">
@@ -70,6 +70,34 @@
                     <button id="saveProfile" class="primary-action full-width">Simpan Perubahan</button>
                     <div id="profileError" class="error-message" hidden></div>
                     <div id="profileSuccess" class="success-message" hidden></div>
+                </div>
+
+                <div class="profile-settings owner-only" id="ownerSettings" hidden>
+                    <h2>Pengaturan Owner 👑</h2>
+
+                    <div class="form-group">
+                        <label for="customWelcomeMessage">Pesan Sambutan Kustom</label>
+                        <input type="text" id="customWelcomeMessage" placeholder="Masukkan pesan sambutan kustom">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customJoinDate">Tanggal Bergabung Kustom</label>
+                        <input type="date" id="customJoinDate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customLibraryCount">Jumlah Pustaka Kustom</label>
+                        <input type="number" id="customLibraryCount" placeholder="Masukkan jumlah kustom">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customHistoryCount">Jumlah History Kustom</label>
+                        <input type="number" id="customHistoryCount" placeholder="Masukkan jumlah kustom">
+                    </div>
+
+                    <button id="saveOwnerSettings" class="primary-action full-width">Simpan Pengaturan Owner</button>
+                    <div id="ownerSettingsError" class="error-message" hidden></div>
+                    <div id="ownerSettingsSuccess" class="success-message" hidden></div>
                 </div>
 
                 <div class="profile-danger-zone">
@@ -124,6 +152,14 @@
         const profileError = document.getElementById('profileError');
         const profileSuccess = document.getElementById('profileSuccess');
         const deleteAccount = document.getElementById('deleteAccount');
+        const ownerSettings = document.getElementById('ownerSettings');
+        const customWelcomeMessage = document.getElementById('customWelcomeMessage');
+        const customJoinDate = document.getElementById('customJoinDate');
+        const customLibraryCount = document.getElementById('customLibraryCount');
+        const customHistoryCount = document.getElementById('customHistoryCount');
+        const saveOwnerSettings = document.getElementById('saveOwnerSettings');
+        const ownerSettingsError = document.getElementById('ownerSettingsError');
+        const ownerSettingsSuccess = document.getElementById('ownerSettingsSuccess');
 
         // Load profile data
         const loadProfile = () => {
@@ -143,10 +179,19 @@
             if (user.isOwner) {
                 badgesHTML += '<span class="owner-badge">Owner</span>';
             }
+            if (user.isKacung) {
+                badgesHTML += '<span class="kacung-badge">Kacung</span>';
+            }
             if (user.isVerified) {
                 badgesHTML += '<span class="verified-badge">✓ Verified</span>';
             }
             profileBadges.innerHTML = badgesHTML;
+
+            // Show owner settings if owner
+            if (user.isOwner) {
+                ownerSettings.hidden = false;
+                loadOwnerSettings();
+            }
 
             // Joined date
             const users = auth.getUsers();
@@ -164,12 +209,41 @@
             const libraryKey = `komikloka:library:${user.username}`;
             const libraryData = localStorage.getItem(libraryKey);
             const libraryIds = libraryData ? JSON.parse(libraryData) : [];
-            libraryCount.textContent = libraryIds.length;
 
             const historyKey = `komikloka:history:${user.username}`;
             const historyData = localStorage.getItem(historyKey);
             const history = historyData ? JSON.parse(historyData) : [];
-            historyCount.textContent = history.length;
+
+            // Apply custom owner settings if available
+            if (user.isOwner) {
+                const ownerSettingsData = localStorage.getItem('komikloka:owner_settings');
+                if (ownerSettingsData) {
+                    const settings = JSON.parse(ownerSettingsData);
+                    if (settings.customJoinDate) {
+                        profileJoined.textContent = new Date(settings.customJoinDate).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                    }
+                    if (settings.customLibraryCount !== undefined) {
+                        libraryCount.textContent = settings.customLibraryCount;
+                    } else {
+                        libraryCount.textContent = libraryIds.length;
+                    }
+                    if (settings.customHistoryCount !== undefined) {
+                        historyCount.textContent = settings.customHistoryCount;
+                    } else {
+                        historyCount.textContent = history.length;
+                    }
+                } else {
+                    libraryCount.textContent = libraryIds.length;
+                    historyCount.textContent = history.length;
+                }
+            } else {
+                libraryCount.textContent = libraryIds.length;
+                historyCount.textContent = history.length;
+            }
 
             // Count comments across all comics
             let totalComments = 0;
@@ -301,6 +375,37 @@
         // Logout
         document.getElementById('logoutBtnHeader').addEventListener('click', () => {
             auth.logout();
+        });
+
+        // Load owner settings
+        const loadOwnerSettings = () => {
+            const ownerSettingsData = localStorage.getItem('komikloka:owner_settings');
+            if (ownerSettingsData) {
+                const settings = JSON.parse(ownerSettingsData);
+                customWelcomeMessage.value = settings.customWelcomeMessage || '';
+                customJoinDate.value = settings.customJoinDate || '';
+                customLibraryCount.value = settings.customLibraryCount || '';
+                customHistoryCount.value = settings.customHistoryCount || '';
+            }
+        };
+
+        // Save owner settings
+        saveOwnerSettings.addEventListener('click', () => {
+            ownerSettingsError.hidden = true;
+            ownerSettingsSuccess.hidden = true;
+
+            const settings = {
+                customWelcomeMessage: customWelcomeMessage.value.trim(),
+                customJoinDate: customJoinDate.value,
+                customLibraryCount: customLibraryCount.value ? parseInt(customLibraryCount.value) : undefined,
+                customHistoryCount: customHistoryCount.value ? parseInt(customHistoryCount.value) : undefined,
+            };
+
+            localStorage.setItem('komikloka:owner_settings', JSON.stringify(settings));
+
+            ownerSettingsSuccess.textContent = 'Pengaturan owner berhasil disimpan';
+            ownerSettingsSuccess.hidden = false;
+            loadProfile();
         });
 
         // Load profile on page load
