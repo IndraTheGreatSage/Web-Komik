@@ -145,7 +145,7 @@
                     return;
                 }
 
-                const comics = window.KomikData ? await window.KomikData.loadLibrary() : [];
+                const comics = (typeof window !== 'undefined' && window.KomikData) ? await window.KomikData.loadLibrary() : [];
                 const libraryComics = comics.filter(comic => libraryIds.includes(comic.id));
 
                 if (comicGrid) {
